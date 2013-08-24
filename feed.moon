@@ -25,7 +25,6 @@ class Head extends Box
     true
 
 
-
 class Player extends Box
   speed: 100
 
@@ -56,6 +55,54 @@ class Player extends Box
       @seq\update dt
 
     true
+
+
+class Bat extends Box
+  color: { 200, 188, 66 }
+
+  ox: 8
+  oy: 4
+
+
+  x: 50
+  y: 50
+
+  w: 70
+  h: 8
+
+  rot: 0
+
+  rest_rot: 2.7018146928204
+  swing_rot: 1.7848146928204
+
+  swing: =>
+    if @return_progress and @return_progress > 0.8
+      @seq = nil
+
+    return if @seq
+
+    @seq = Sequence ->
+      @return_progress = 0
+      tween @, 0.1, rot: @swing_rot
+      tween @, 0.5, rot: @rest_rot, return_progress: 1
+      @seq = nil
+
+  update: (dt, stage) =>
+    @rot = @rest_rot
+    @seq\update dt if @seq
+    true
+
+  draw: =>
+    COLOR\push @color
+    g.push!
+    g.translate @x, @y
+    g.rotate @rot
+    g.rectangle "fill", -@ox, -@oy, @w, @h
+    COLOR\pop!
+    -- p "%.3f"\format(@rot), 0, 0
+    -- p "%.3f"\format(@return_progress or 0), 0, 8
+    g.pop!
+
 
 class FoodItem extends Particle
   life: 4.0
@@ -103,7 +150,6 @@ class SodaPile extends FoodPile
   throw_dir: Vec2d -0.160396, -0.987053
   x: 70, y: 115
 
-
 class FeedStage extends Stage
   name: "Feed Stage"
 
@@ -113,10 +159,14 @@ class FeedStage extends Stage
     if pile = @food_piles[pile_num]
       @player\goto_pile pile, @
 
+    if key == " "
+      @bat\swing @
+
   new: (...) =>
     super ...
     @particles = DrawList!
     @player = Player!
+    @bat = Bat!
 
     @food_piles = {
       SteakPile!
@@ -128,9 +178,10 @@ class FeedStage extends Stage
       \add Head!
       \add_all @food_piles
 
-      \add VectorSelector @game.viewport
+      -- \add BoxSelector @game.viewport
+      -- \add VectorSelector @game.viewport
       \add @player
-
+      \add @bat
 
   draw: =>
     super!
