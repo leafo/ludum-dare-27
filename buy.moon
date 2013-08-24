@@ -1,6 +1,20 @@
 
 {graphics: g, :keyboard} = love
 
+Sequence.default_scope.shake = (thing, total_time, mx=5, my=5, speed=10, decay_to=0) ->
+  ox, oy = thing.x, thing.y
+
+  time = total_time
+  while time > 0
+    time -= coroutine.yield!
+    decay = math.min(math.max(time, decay_to), 1)
+
+    dx = decay * mx * math.sin(time*10*speed)
+    dy = decay * my * math.cos(time*10*speed)
+
+    thing.x = ox + dx
+    thing.y = oy + dy
+
 
 class Player extends Entity
   speed: 80
@@ -11,10 +25,33 @@ class Player extends Entity
     super x, y
 
   update: (dt, stage) =>
-    dir = movement_vector!
-    @move unpack dir * @speed * dt
+    if @hit_seq
+      @hit_seq\update dt
+    else
+      dir = movement_vector!
+      @move unpack dir * @speed * dt
+
+    -- see if hitting person
+    unless @hit_seq
+      for p in *stage.people
+        continue if p.hit_seq
+        if p\touches_box @
+          p\take_hit @, stage
+          @take_hit p, stage
+
     true
 
+  take_hit: (thing, stage) =>
+    @hit_seq = Sequence ->
+      print "player stunned"
+      dist = 15 -- TODO: shrink this with upgrade
+
+      dir = (Vec2d(@center!) - Vec2d(thing\center!))\normalized! * dist
+
+      tween @, dist / 100, { x: @x + dir[1], y: @y + dir[2] }
+
+      shake @, 0.2, 10, 10
+      @hit_seq = nil
 
 class Person extends Entity
   w: 5
@@ -25,6 +62,21 @@ class Person extends Entity
 
   new: (@x, @y) =>
     (pick_one @behavior_1, @behavior_2) @
+
+  take_hit: (thing, stage) =>
+    return if @hit_seq
+
+    @hit_seq = Sequence ->
+      c = @color
+      @color = {255, 0, 0}
+
+      dir = (Vec2d(@center!) - Vec2d(thing\center!))\normalized! * 10
+      tween @, 0.2, { x: @x + dir[1], y: @y + dir[2] }
+      shake @, 0.2, 10, 10
+
+      @color = c
+      @hit_seq = nil
+      (pick_one @behavior_1, @behavior_2) @
 
   behavior_1: =>
     print "behavior 1"
@@ -51,7 +103,10 @@ class Person extends Entity
       again!
 
   update: (dt, stage) =>
-    @seq\update dt
+    if @hit_seq
+      @hit_seq\update dt
+    else
+      @seq\update dt
     true
 
   draw: =>
@@ -107,7 +162,7 @@ class BuyStage extends Stage
           vendor\buy @
 
   add_people: (num=10) =>
-    people = for i=1,num
+    return for i=1,num
       with p = Person @person_drop\random_point!
         @entities\add p
 
