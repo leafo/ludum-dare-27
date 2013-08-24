@@ -14,8 +14,8 @@ class Game
   new: =>
     @stage_i = 1
     @stages = {
-      BuyStage
       FeedStage
+      BuyStage
     }
 
     @inventory = {
