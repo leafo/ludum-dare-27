@@ -15,6 +15,49 @@ class Player extends Entity
     @move unpack dir * @speed * dt
     true
 
+
+class Person extends Entity
+  w: 5
+  h: 5
+  speed: 10
+
+  color: { 222, 84, 208 }
+
+  new: (@x, @y) =>
+    (pick_one @behavior_1, @behavior_2) @
+
+  behavior_1: =>
+    print "behavior 1"
+    @seq = Sequence ->
+      speed = rand 8, 12
+      dist = rand 8,13
+      step = Vec2d.random dist
+
+      tween @, dist / speed, x: @x + step[1], y: @y + step[2]
+
+      wait rand 0.6, 1.2
+      again!
+
+  behavior_2: =>
+    print "behavior 2"
+    @seq = Sequence ->
+      dir = Vec2d.random!
+
+      for i = 1, math.random 5, 10
+        heading = dir\random_heading 90, random_normal!
+        heading = heading * 4
+        tween @, 0.2, { x: @x + heading[1], y: @y + heading[2] }, lerp
+
+      again!
+
+  update: (dt, stage) =>
+    @seq\update dt
+    true
+
+  draw: =>
+    super @color
+
+
 export ^
 
 class Vendor extends Box
@@ -55,12 +98,18 @@ class Vendor extends Box
 
 class BuyStage extends Stage
   name: "Buy Stage"
+  person_drop: Box  11, 18, 176, 120
 
   on_key: (char) =>
     if char == " "
       for vendor in *@vendors
         if @player\touches_box vendor.buy_radius
           vendor\buy @
+
+  add_people: (num=10) =>
+    people = for i=1,num
+      with p = Person @person_drop\random_point!
+        @entities\add p
 
   new: (...) =>
     super ...
@@ -71,8 +120,11 @@ class BuyStage extends Stage
       Vendor 150, 30, "soda"
     }
 
+    @people = @add_people!
+
     with @entities
       \add @player
       \add Vendor 10, 50
       \add_all @vendors
+      \add BoxSelector @game.viewport
 
