@@ -18,7 +18,7 @@ class Game
     }
 
     @sequence = Sequence ->
-      @current_stage = @stages[@stage_i]!
+      @current_stage = @stages[@stage_i] @
       wait_until -> @current_stage\is_done!
       @stage_i = (@stage_i % #@stages) + 1
       again!
@@ -30,6 +30,10 @@ class Game
 
     if @current_stage
       @current_stage\update dt
+
+  on_key: (...) =>
+    if @current_stage and @current_stage.on_key
+      @current_stage\on_key ...
 
   draw: =>
     @viewport\apply!

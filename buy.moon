@@ -1,5 +1,5 @@
 
-{graphics: g} = love
+{graphics: g, :keyboard} = love
 
 export ^
 
@@ -11,42 +11,58 @@ class Player extends Entity
   new: (x,y) =>
     super x, y
 
-  update: (dt) =>
+  update: (dt, stage) =>
     dir = movement_vector!
     @move unpack dir * @speed * dt
     true
 
-
 class Vendor extends Box
   w: 20
   h: 20
+  cooloff: 0.1
 
-  new: (@x, @y) =>
+  new: (@x, @y, @type) =>
+    @buy_radius = @scale 1.8, 1.8, true
 
-  update: (dt) =>
+  update: (dt, stage) =>
+    @cooloff -= dt
+    @cooloff = 0 if @cooloff < 0
     true
 
+  buy: (stage) =>
+    return unless @cooloff == 0
+    @cooloff = @@cooloff
+    print "BUYING #{@type}"
+
   draw: =>
-    Box.draw @, {128,200,83}
+    if @active
+      Box.draw @, {188,200,123}
+    else
+      Box.draw @, {128,200,83}
+
+    @active = false
 
 class BuyStage extends Stage
-  new: =>
-    super!
+  name: "Buy Stage"
+
+  on_key: (char) =>
+    if char == " "
+      for vendor in *@vendors
+        if @player\touches_box vendor.buy_radius
+          vendor\buy @
+          @hud.money -= 55
+
+  new: (...) =>
+    super ...
     @player = Player 100, 100
+    @vendors = {
+      Vendor 10, 50, "steak"
+      Vendor 80, 50, "pasta"
+      Vendor 150, 30, "soda"
+    }
 
-    with @entities = DrawList!
+    with @entities
       \add @player
-      \add @timer
       \add Vendor 10, 50
-      \add Vendor 80, 50
-
-  collides: =>
-    false
-
-  update: (dt) =>
-    @entities\update dt, @
-
-  draw: =>
-    @entities\draw!
-    p "Buy Stage", 100, 10
+      \add_all @vendors
 

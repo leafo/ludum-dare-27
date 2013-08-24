@@ -3,12 +3,5 @@
 export ^
 
 class FeedStage extends Stage
-  new: =>
-    super!
+  name: "Feed Stage"
 
-  draw: =>
-    @timer\draw!
-    p "Feed Stage", 100, 10
-
-  update: (dt) =>
-    @timer\update dt
