@@ -60,15 +60,14 @@ class Player extends Box
 class Bat extends Box
   color: { 200, 188, 66 }
 
-  ox: 8
-  oy: 4
-
-
-  x: 50
-  y: 50
+  x: -8
+  y: -4
 
   w: 70
   h: 8
+
+  wx: 70
+  wy: 20
 
   rot: 0
 
@@ -87,17 +86,29 @@ class Bat extends Box
       tween @, 0.5, rot: @rest_rot, return_progress: 1
       @seq = nil
 
+  touches_pt: (x,y) =>
+    vec = Vec2d(x,y) - Vec2d(@wx, @wy)
+
+    r = vec\len!
+    theta = vec\radians! - @rot
+
+    local_x = r * math.cos theta
+    local_y = r * math.sin theta
+
+    super local_x, local_y
+
   update: (dt, stage) =>
     @rot = @rest_rot
     @seq\update dt if @seq
+
     true
 
   draw: =>
     COLOR\push @color
     g.push!
-    g.translate @x, @y
+    g.translate @wx, @wy
     g.rotate @rot
-    g.rectangle "fill", -@ox, -@oy, @w, @h
+    g.rectangle "fill", @x, @y, @w, @h
     COLOR\pop!
     -- p "%.3f"\format(@rot), 0, 0
     -- p "%.3f"\format(@return_progress or 0), 0, 8
@@ -190,4 +201,8 @@ class FeedStage extends Stage
   update: (dt) =>
     super dt
     @particles\update dt, @
+
+    if love.mouse.isDown "l"
+      mx, my = @game.viewport\unproject love.mouse.getPosition!
+      print @bat\touches_pt mx, my
 
