@@ -228,6 +228,7 @@ class Vendor extends Box
     true
 
   buy: (stage) =>
+    return if stage.player.hit_seq
     return unless @cooloff == 0
     @cooloff = @@cooloff
     inventory = stage.game.inventory

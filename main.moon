@@ -14,16 +14,17 @@ class Game
   new: =>
     @stage_i = 1
     @stages = {
+      FeedStage
       BuyStage
       UpgradeState
-      FeedStage
     }
 
     @inventory = {
       money: 99
-      steak: 0
-      pasta: 0
-      soda: 0
+
+      steak: 10
+      pasta: 10
+      soda: 10
     }
 
     @upgrades = {

@@ -1,5 +1,40 @@
 {graphics: g} = love
 
+colors = {
+  steak: { 250, 92, 102 }
+  pasta: { 235, 199, 0 }
+  soda: { 141, 74, 232 }
+  gray: { 80,80,80 }
+}
+
+class FeedHud extends Hud
+  -- box<(113, 2), (83, 12)>
+
+  new: (...) =>
+    super ...
+    @satisfied = HorizBar 80, 6
+
+  draw: =>
+    super!
+    hungry_for = @stage.head.hungry_for
+
+    p "Satisfaction", 110, 1
+    @satisfied\draw 110, 10
+
+    p "Feed: ", 110, 20
+    w = 5
+    for i, food in ipairs {"steak", "pasta", "soda"}
+      if hungry_for[food]
+        COLOR\push colors[food]
+      else
+        COLOR\push colors.gray
+
+      g.rectangle "fill",
+        145 + (i - 1) * (w + 4), 21,
+        w, w
+
+      COLOR\pop!
+
 
 class Player extends Box
   speed: 100
@@ -50,11 +85,33 @@ class Head extends Box
     @mouth = Box 104, 76, 70, 40
     @mouth_hitbox = Box 104, 103, 70, 13
 
+    @hungry_for = {
+      steak: true
+      pasta: true
+      soda: true
+    }
+
+    @seq = Sequence ->
+      for k in pairs @hungry_for
+        @hungry_for[k] = true
+
+      delta = math.abs 0.5 - random_normal!
+      to_hide = math.floor delta / 0.09
+
+      while to_hide > 0
+        not_hungry = pick_one unpack [k for k,v in pairs @hungry_for when v]
+        @hungry_for[not_hungry] = false
+        to_hide -= 1
+
+      wait 1
+      again!
+
   draw: =>
     super @color
     @mouth\draw @mouth_color
 
   update: (dt) =>
+    @seq\update dt
     true
 
 class Bat extends Box
@@ -174,20 +231,20 @@ class FoodPile extends Box
 
 class SteakPile extends FoodPile
   item: "steak"
-  color: { 250, 92, 102 }
+  color: colors.steak
   throw_dir: Vec2d 0.193022, -0.981194
   x: 9, y: 90
 
 class PastaPile extends FoodPile
   item: "pasta"
-  color: { 235, 199, 0 }
+  color: colors.pasta
   throw_speed: 220
   throw_dir: Vec2d -0.090536, -0.995893
   x: 40, y: 105
 
 class SodaPile extends FoodPile
   item: "soda"
-  color: { 141, 74, 232 }
+  color: colors.soda
   throw_speed: 240
   throw_dir: Vec2d -0.160396, -0.987053
   x: 70, y: 115
@@ -221,11 +278,14 @@ class FeedStage extends Stage
       \add @head
       \add_all @food_piles
 
-      -- \add BoxSelector @game.viewport
+      \add BoxSelector @game.viewport
       -- \add VectorSelector @game.viewport
 
       \add @player
       \add @bat
+
+  make_hud: =>
+    FeedHud @
 
   draw: =>
     super!

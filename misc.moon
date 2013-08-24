@@ -11,11 +11,13 @@ export ^
 
 class Stage
   new: (@game) =>
-    @hud = Hud @
+    @hud = @make_hud!
     @timer = Timer!
 
     with @entities = DrawList!
       \add @hud
+
+  make_hud: => Hud @
 
   update: (dt) =>
     @entities\update dt, @
@@ -30,7 +32,7 @@ class Stage
     false
 
 class Timer
-  time: 5
+  time: 10
 
   draw: (x,y) =>
     old_font = g.getFont!
@@ -85,4 +87,34 @@ class Hud
 
     @stage.timer\update dt
     true
+
+
+class HorizBar
+  color: { 255, 128, 128, 128 }
+  border: true
+  padding: 1
+
+  new: (@w, @h, @value=0.5)=>
+
+  update: (dt) =>
+
+  draw: (x, y) =>
+    g.push!
+    g.setColor 255,255,255
+
+    if @border
+      g.setLineWidth 0.6
+      g.rectangle "line", x, y, @w, @h
+
+      g.setColor @color
+      w = @value * (@w - @padding*2)
+
+      g.rectangle "fill", x + @padding, y + @padding, w, @h - @padding*2
+    else
+      g.setColor @color
+      w = @value * @w
+      g.rectangle "fill", x, y, w, @h
+
+    g.pop!
+    g.setColor 255,255,255,255
 
