@@ -30,7 +30,7 @@ class Stage
     false
 
 class Timer
-  time: 99
+  time: 5
 
   draw: (x,y) =>
     old_font = g.getFont!
@@ -49,8 +49,6 @@ class Timer
 
   __tostring: =>
     "0:%02d"\format math.ceil(@time)
-
-
 
 class Hud
   new: (@stage) =>

@@ -8,12 +8,13 @@ export p = (str, ...) ->
 require "misc"
 require "buy"
 require "feed"
-
+require "upgrade"
 
 class Game
   new: =>
     @stage_i = 1
     @stages = {
+      UpgradeState
       FeedStage
       BuyStage
     }
@@ -23,6 +24,19 @@ class Game
       steak: 0
       pasta: 0
       soda: 0
+    }
+
+    @upgrades = {
+      -- buy
+      sneakers: 0
+      bartering: 0
+      guts: 0
+
+      -- feed
+      rollerskates: 0
+      laxitives: 0
+      fiber: 0
+      organization: 0
     }
 
     @sequence = Sequence ->
