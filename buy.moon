@@ -16,6 +16,25 @@ Sequence.default_scope.shake = (thing, total_time, mx=5, my=5, speed=10, decay_t
     thing.y = oy + dy
 
 
+-- a tween that applies a delta to value instead of constant
+Sequence.default_scope.tween_delta = (thing, time, diffs, step=smoothstep) ->
+  t = 0
+  last_frame = { k, 0 for k in pairs diffs }
+
+  while t < 1.0
+    for key, finish in pairs diffs
+      new_val = step 0, finish, t
+      thing[key] += new_val - last_frame[key]
+      last_frame[key] = new_val
+
+    t += coroutine.yield! / time
+
+  -- push left over time
+  leftover = t - 1.0
+  if leftover > 0
+    coroutine.yield "more", leftover
+
+
 class Player extends Entity
   speed: 280
   max_speed: 80
@@ -34,30 +53,30 @@ class Player extends Entity
       @hit_seq\update dt
     else
       @accel = movement_vector!
-      -- need to do this per axis
 
-      if @accel\is_zero!
-        dampen_vector @vel, decel
+    if @accel\is_zero!
+      dampen_vector @vel, decel
+    else
+      if @accel[1] == 0
+        -- not moving in x, shrink it
+        @vel[1] = dampen @vel[1], decel
+        nil
       else
-        if @accel[1] == 0
-          -- not moving in x, shrink it
-          @vel[1] = dampen @vel[1], decel
-          nil
-        else
-          if (@accel[1] < 0) == (@vel[1] > 0)
-            @accel[1] *= 2
+        if (@accel[1] < 0) == (@vel[1] > 0)
+          @accel[1] *= 2
 
-        if @accel[2] == 0
-          -- not moving in y, shrink it
-          @vel[2] = dampen @vel[2], decel
-        else
-          if (@accel[2] < 0) == (@vel[2] > 0)
-            @accel[2] *= 2
+      if @accel[2] == 0
+        -- not moving in y, shrink it
+        @vel[2] = dampen @vel[2], decel
+      else
+        if (@accel[2] < 0) == (@vel[2] > 0)
+          @accel[2] *= 2
 
-        @vel\adjust unpack @accel * dt * @speed
-        @vel\cap @max_speed
 
-      @move @vel[1] * dt, @vel[2] * dt
+    @vel\adjust unpack @accel * dt * @speed
+    @vel\cap @max_speed
+
+    @move @vel[1] * dt, @vel[2] * dt
 
     -- see if hitting person
     unless @hit_seq
@@ -73,16 +92,16 @@ class Player extends Entity
     @hit_seq = Sequence ->
       print "player stunned"
       @accel = Vec2d!
-      @vel = Vec2d!
 
       dist = 15 -- TODO: shrink this with upgrade
 
       dir = (Vec2d(@center!) - Vec2d(thing\center!))\normalized! * dist
 
-      tween @, dist / 100, { x: @x + dir[1], y: @y + dir[2] }
+      tween_delta @, dist / 100, { x: dir[1], y: dir[2] }
 
       shake @, 0.2, 10, 10
       @hit_seq = nil
+
 
 class Person extends Entity
   w: 5
@@ -193,7 +212,7 @@ class BuyStage extends Stage
           vendor\buy @
 
   add_people: (num=10) =>
-    return for i=1,0
+    return for i=1,num
       with p = Person @person_drop\random_point!
         @entities\add p
 
