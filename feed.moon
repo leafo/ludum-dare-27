@@ -12,14 +12,14 @@ class FeedHud extends Hud
 
   new: (...) =>
     super ...
-    @satisfied = HorizBar 80, 6
+    @health = HorizBar 80, 6
 
   draw: =>
     super!
     hungry_for = @stage.head.hungry_for
 
     p "Satisfaction", 110, 1
-    @satisfied\draw 110, 10
+    @health\draw 110, 10
 
     p "Feed: ", 110, 20
     w = 5
@@ -34,6 +34,11 @@ class FeedHud extends Hud
         w, w
 
       COLOR\pop!
+
+  update: (dt) =>
+    @health.value = @stage.head.health
+    @health\update(dt)
+    super dt
 
 
 class Player extends Box
@@ -81,6 +86,8 @@ class Head extends Box
   w: 90
   h: 70
 
+  health: 0.5
+
   new: =>
     super
     @mouth = Box 104, 76, 70, 40
@@ -98,7 +105,6 @@ class Head extends Box
 
       delta = math.abs 0.5 - random_normal!
       to_hide = math.floor delta / 0.09
-      to_hide = 3
 
       while to_hide > 0
         not_hungry = pick_one unpack [k for k,v in pairs @hungry_for when v]
@@ -113,6 +119,9 @@ class Head extends Box
     @mouth\draw @puking and @puke_color or @mouth_color
 
   update: (dt) =>
+    @health -= dt / 10
+    @health = 0 if @health < 0
+
     @seq\update dt
     @puking\update dt if @puking
     true
@@ -122,6 +131,10 @@ class Head extends Box
       print "I AM PUKING"
       wait 1.0
       @puking = nil
+
+  eat: (food, stage) =>
+    @health += 0.1
+    @health = 1 if @health > 1
 
 class Bat extends Box
   color: { 200, 188, 66 }
@@ -219,7 +232,7 @@ class FoodItem extends Particle
 
     @consumed = true
     if head.hungry_for[@type]
-      print "MMM"
+      head\eat @, stage
     else
       head\puke!
 
