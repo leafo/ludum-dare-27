@@ -2,19 +2,16 @@
 {graphics: g, :keyboard} = love
 
 Sequence.default_scope.shake = (thing, total_time, mx=5, my=5, speed=10, decay_to=0) ->
-  ox, oy = thing.x, thing.y
-
   time = total_time
+
   while time > 0
     time -= coroutine.yield!
     decay = math.min(math.max(time, decay_to), 1)
+    thing.shake_x = decay * mx * math.sin(time*10*speed)
+    thing.shake_y = decay * my * math.cos(time*10*speed)
 
-    dx = decay * mx * math.sin(time*10*speed)
-    dy = decay * my * math.cos(time*10*speed)
-
-    thing.x = ox + dx
-    thing.y = oy + dy
-
+  thing.shake_x = nil
+  thing.shake_y = nil
 
 -- a tween that applies a delta to value instead of constant
 -- probably not going to need this
@@ -36,11 +33,11 @@ Sequence.default_scope.tween_delta = (thing, time, diffs, step=smoothstep) ->
     coroutine.yield "more", leftover
 
 -- thing must have @vel
-Sequence.default_scope.apply_force = (thing, time, force) ->
+Sequence.default_scope.apply_force = (thing, time, force, target="vel") ->
   while time > 0
     dt = coroutine.yield!
-    thing.vel[1] += force[1] * dt
-    thing.vel[2] += force[2] * dt
+    thing[target][1] += force[1] * dt
+    thing[target][2] += force[2] * dt
     time -= dt
 
   if time < 0
@@ -117,65 +114,88 @@ class Player extends Entity
       shake @, 0.2, 10, 10
       @hit_seq = nil
 
+  draw: =>
+    if @shake_x
+      g.push!
+      g.translate @shake_x, @shake_y
+
+    super!
+
+    if @shake_x
+      g.pop!
+
 
 class Person extends Entity
   w: 5
   h: 5
   speed: 10
-
   color: { 222, 84, 208 }
 
+  stunned: false
+
   new: (@x, @y) =>
-    (pick_one @behavior_1, @behavior_2) @
+    @vel = Vec2d!
+    @accel = Vec2d!
+    @behave!
 
   take_hit: (thing, stage) =>
-    return if @hit_seq
+    return if @stunned
+    @stunned = true
 
-    @hit_seq = Sequence ->
-      c = @color
-      @color = {255, 0, 0}
-
-      dir = (Vec2d(@center!) - Vec2d(thing\center!))\normalized! * 10
-      tween @, 0.2, { x: @x + dir[1], y: @y + dir[2] }
+    @seq = Sequence ->
+      @applied = (Vec2d(@center!) - Vec2d(thing\center!))\normalized! * 1000
+      apply_force @, 0.1, @applied
+      @applied = nil
       shake @, 0.2, 10, 10
+      wait 0.5
 
-      @color = c
-      @hit_seq = nil
-      (pick_one @behavior_1, @behavior_2) @
+      @stunned = false
+      @behave!
+
+  behave: =>
+    -- @seq = (pick_one @behavior_1, @behavior_2) @
+    @seq = @behavior_1!
 
   behavior_1: =>
     print "behavior 1"
-    @seq = Sequence ->
-      speed = rand 8, 12
-      dist = rand 8,13
-      step = Vec2d.random dist
-
-      tween @, dist / speed, x: @x + step[1], y: @y + step[2]
-
-      wait rand 0.6, 1.2
-      again!
-
-  behavior_2: =>
-    print "behavior 2"
-    @seq = Sequence ->
-      dir = Vec2d.random!
-
-      for i = 1, math.random 5, 10
-        heading = dir\random_heading 90, random_normal!
-        heading = heading * 4
-        tween @, 0.2, { x: @x + heading[1], y: @y + heading[2] }, lerp
-
+    Sequence ->
+      @applied = Vec2d.random! * 100
+      apply_force @, 0.1, @applied
+      @applied = nil
+      wait 1.0
       again!
 
   update: (dt, stage) =>
-    if @hit_seq
-      @hit_seq\update dt
-    else
-      @seq\update dt
+    @seq\update dt if @seq
+
+    @vel\adjust unpack @accel * dt
+    if not @applied
+      damp = dt * 2
+      if @stunned
+        damp *= 100
+      dampen_vector @vel, damp
+
+    cx, cy = @fit_move @vel[1] * dt, @vel[2] * dt, stage
+
+    if cx
+      @applied[1] = -@applied[1] if @applied
+      @vel[1] = -@vel[1] / 2
+
+    if cy
+      @applied[2] = -@applied[2] if @applied
+      @vel[2] = -@vel[2] / 2
+
     true
 
   draw: =>
-    super @color
+    if @shake_x
+      g.push!
+      g.translate @shake_x, @shake_y
+
+    super @stunned and {255,0,0} or @color
+
+    if @shake_x
+      g.pop!
 
 
 export ^
@@ -229,6 +249,10 @@ class BuyStage extends Stage
   add_people: (num=10) =>
     return for i=1,num
       with p = Person @person_drop\random_point!
+        while @collides p
+          print "reputting..."
+          p.x, p.y = @person_drop\random_point!
+
         @entities\add p
 
   collides: (thing) =>
@@ -236,7 +260,7 @@ class BuyStage extends Stage
       if v\touches_box thing
         return true
 
-    false
+    not @game.viewport\contains_box thing
 
   new: (...) =>
     super ...
