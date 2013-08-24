@@ -221,8 +221,9 @@ class FeedStage extends Stage
       \add @head
       \add_all @food_piles
 
-      \add BoxSelector @game.viewport
+      -- \add BoxSelector @game.viewport
       -- \add VectorSelector @game.viewport
+
       \add @player
       \add @bat
 

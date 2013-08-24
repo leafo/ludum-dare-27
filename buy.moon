@@ -17,6 +17,7 @@ Sequence.default_scope.shake = (thing, total_time, mx=5, my=5, speed=10, decay_t
 
 
 -- a tween that applies a delta to value instead of constant
+-- probably not going to need this
 Sequence.default_scope.tween_delta = (thing, time, diffs, step=smoothstep) ->
   t = 0
   last_frame = { k, 0 for k in pairs diffs }
@@ -34,6 +35,16 @@ Sequence.default_scope.tween_delta = (thing, time, diffs, step=smoothstep) ->
   if leftover > 0
     coroutine.yield "more", leftover
 
+-- thing must have @vel
+Sequence.default_scope.apply_force = (thing, time, force) ->
+  while time > 0
+    dt = coroutine.yield!
+    thing.vel[1] += force[1] * dt
+    thing.vel[2] += force[2] * dt
+    time -= dt
+
+  if time < 0
+    coroutine.yield "more", -time
 
 class Player extends Entity
   speed: 280
@@ -76,7 +87,15 @@ class Player extends Entity
     @vel\adjust unpack @accel * dt * @speed
     @vel\cap @max_speed
 
-    @move @vel[1] * dt, @vel[2] * dt
+    cx, cy = @fit_move @vel[1] * dt, @vel[2] * dt, stage
+
+    if cx
+      @vel[1] = 0
+      @accel[1] = 0
+
+    if cy
+      @vel[2] = 0
+      @accel[2] = 0
 
     -- see if hitting person
     unless @hit_seq
@@ -92,13 +111,9 @@ class Player extends Entity
     @hit_seq = Sequence ->
       print "player stunned"
       @accel = Vec2d!
-
-      dist = 15 -- TODO: shrink this with upgrade
-
-      dir = (Vec2d(@center!) - Vec2d(thing\center!))\normalized! * dist
-
-      tween_delta @, dist / 100, { x: dir[1], y: dir[2] }
-
+      dir = (Vec2d(@center!) - Vec2d(thing\center!))\normalized! * 3000
+      apply_force @, 0.1, dir
+      @vel = Vec2d!
       shake @, 0.2, 10, 10
       @hit_seq = nil
 
@@ -216,6 +231,13 @@ class BuyStage extends Stage
       with p = Person @person_drop\random_point!
         @entities\add p
 
+  collides: (thing) =>
+    for v in *@vendors
+      if v\touches_box thing
+        return true
+
+    false
+
   new: (...) =>
     super ...
     @player = Player 100, 100
@@ -231,5 +253,5 @@ class BuyStage extends Stage
       \add @player
       \add Vendor 10, 50
       \add_all @vendors
-      \add BoxSelector @game.viewport
+      -- \add BoxSelector @game.viewport
 
