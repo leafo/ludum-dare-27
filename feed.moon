@@ -25,6 +25,7 @@ class Head extends Box
     true
 
 
+
 class Player extends Box
   speed: 100
 
@@ -70,13 +71,15 @@ class FoodPile extends Box
   w: 20
   h: 20
 
+  throw_gravity: Vec2d(0, 300)
   throw_dir: Vec2d(20, -100) * 2
+  throw_speed: 200
 
   throw: (stage) =>
     print "Throwing"
     x,y = @center!
 
-    stage.particles\add FoodItem x,y, @throw_dir\dup!, Vec2d(0, 300)
+    stage.particles\add FoodItem x,y, @throw_dir * @throw_speed, @throw_gravity
 
   update: (dt) =>
     true
@@ -85,14 +88,19 @@ class FoodPile extends Box
 
 class SteakPile extends FoodPile
   color: { 250, 92, 102 }
+  throw_dir: Vec2d 0.193022, -0.981194
   x: 9, y: 90
 
 class PastaPile extends FoodPile
   color: { 235, 199, 0 }
+  throw_speed: 220
+  throw_dir: Vec2d -0.090536, -0.995893
   x: 40, y: 105
 
 class SodaPile extends FoodPile
   color: { 141, 74, 232 }
+  throw_speed: 240
+  throw_dir: Vec2d -0.160396, -0.987053
   x: 70, y: 115
 
 
@@ -120,7 +128,7 @@ class FeedStage extends Stage
       \add Head!
       \add_all @food_piles
 
-      \add BoxSelector @game.viewport
+      \add VectorSelector @game.viewport
       \add @player
 
 
