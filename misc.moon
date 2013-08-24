@@ -53,18 +53,11 @@ class Timer
 
 
 class Hud
-  money: 999
-
-  steak: 0
-  pasta: 0
-  soda: 0
-  
   new: (@stage) =>
-    @display_money = @money
+    @inventory = @stage.game.inventory
 
-    @display_steak = @steak
-    @display_pasta = @pasta
-    @display_soda = @soda
+    for key, val in pairs @inventory
+      @[key] = val
 
   draw: =>
     v = @stage.game.viewport
@@ -73,23 +66,25 @@ class Hud
     g.translate 43, 1
 
     p @stage.name, 0, 0
-    p "Money: $#{floor @display_money}", 0, line_height
+    p "Money: $#{floor @money}", 0, line_height
     g.pop!
 
     g.push!
     offset = v.w / 3
     g.translate 0, v.h - line_height
 
-    p "Steak: #{floor @display_steak}", 0, 0
-    p "Pasta: #{floor @display_pasta}", offset, 0
-    p "Soda: #{floor @display_soda}", offset * 2, 0
+    p "Steak: #{floor @steak}", 0, 0
+    p "Pasta: #{floor @pasta}", offset, 0
+    p "Soda: #{floor @soda}", offset * 2, 0
 
     g.pop!
 
     @stage.timer\draw 0, 0
 
   update: (dt) =>
-    @display_money = ez_approach @display_money, @money, dt
+    for key in pairs @inventory
+      @[key] = ez_approach @[key], @inventory[key], dt
+
     @stage.timer\update dt
     true
 

@@ -9,12 +9,20 @@ require "misc"
 require "buy"
 require "feed"
 
+
 class Game
   new: =>
     @stage_i = 1
     @stages = {
       BuyStage
       FeedStage
+    }
+
+    @inventory = {
+      money: 99
+      steak: 0
+      pasta: 0
+      soda: 0
     }
 
     @sequence = Sequence ->

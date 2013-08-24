@@ -19,7 +19,9 @@ class Player extends Entity
 class Vendor extends Box
   w: 20
   h: 20
-  cooloff: 0.1
+  cooloff: 0.05
+
+  price: 8
 
   new: (@x, @y, @type) =>
     @buy_radius = @scale 1.8, 1.8, true
@@ -32,7 +34,15 @@ class Vendor extends Box
   buy: (stage) =>
     return unless @cooloff == 0
     @cooloff = @@cooloff
-    print "BUYING #{@type}"
+    inventory = stage.game.inventory
+
+    if inventory.money < @price
+      print "NO MONEY"
+      return
+
+    print "BUYING #{@type} for #{@price}"
+    stage.game.inventory[@type] += 1
+    stage.game.inventory.money -= @price
 
   draw: =>
     if @active
@@ -50,7 +60,6 @@ class BuyStage extends Stage
       for vendor in *@vendors
         if @player\touches_box vendor.buy_radius
           vendor\buy @
-          @hud.money -= 55
 
   new: (...) =>
     super ...
