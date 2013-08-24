@@ -157,26 +157,36 @@ class FoodPile extends Box
   throw_speed: 200
 
   throw: (stage) =>
-    x,y = @center!
-    stage.particles\add FoodItem x,y, @throw_dir * @throw_speed, @throw_gravity
+    if @inventory[@item] > 0
+      x,y = @center!
+      stage.particles\add FoodItem x,y, @throw_dir * @throw_speed, @throw_gravity
+      @inventory[@item] -= 1
+    else
+      print "ERROR NO #{@item} left"
 
   update: (dt) =>
     true
 
   draw: => super @color
 
+  new: (state) =>
+    @inventory = state.game.inventory
+
 class SteakPile extends FoodPile
+  item: "steak"
   color: { 250, 92, 102 }
   throw_dir: Vec2d 0.193022, -0.981194
   x: 9, y: 90
 
 class PastaPile extends FoodPile
+  item: "pasta"
   color: { 235, 199, 0 }
   throw_speed: 220
   throw_dir: Vec2d -0.090536, -0.995893
   x: 40, y: 105
 
 class SodaPile extends FoodPile
+  item: "soda"
   color: { 141, 74, 232 }
   throw_speed: 240
   throw_dir: Vec2d -0.160396, -0.987053
@@ -202,9 +212,9 @@ class FeedStage extends Stage
     @bat = Bat!
 
     @food_piles = {
-      SteakPile!
-      PastaPile!
-      SodaPile!
+      SteakPile @
+      PastaPile @
+      SodaPile @
     }
 
     with @entities
