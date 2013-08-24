@@ -73,6 +73,8 @@ class Game
 
     @viewport\pop!
 
+    p tostring(love.timer.getFPS!), 8, 8
+
 load_font = (img, chars)->
   font_image = imgfy img
   g.newImageFont font_image.tex, chars

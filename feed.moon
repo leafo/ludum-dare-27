@@ -73,6 +73,7 @@ class Head extends Box
   -- box<(104, 76), (69, 39)>
   color: { 252, 231, 178 }
   mouth_color: { 255, 80, 80, 100 }
+  puke_color: { 71, 128, 78 }
 
   x: 100
   y: 50
@@ -97,6 +98,7 @@ class Head extends Box
 
       delta = math.abs 0.5 - random_normal!
       to_hide = math.floor delta / 0.09
+      to_hide = 3
 
       while to_hide > 0
         not_hungry = pick_one unpack [k for k,v in pairs @hungry_for when v]
@@ -108,11 +110,18 @@ class Head extends Box
 
   draw: =>
     super @color
-    @mouth\draw @mouth_color
+    @mouth\draw @puking and @puke_color or @mouth_color
 
   update: (dt) =>
     @seq\update dt
+    @puking\update dt if @puking
     true
+
+  puke: =>
+    @puking = Sequence ->
+      print "I AM PUKING"
+      wait 1.0
+      @puking = nil
 
 class Bat extends Box
   color: { 200, 188, 66 }
@@ -183,6 +192,10 @@ class FoodItem extends Particle
   color: { 255, 255, 255 }
   consumed: false
 
+  new: (...) =>
+    super ...
+    @color = colors[@type]
+
   draw: =>
     b = Box 0, 0, 3, 3
     b\move_center(@x, @y)
@@ -200,8 +213,24 @@ class FoodItem extends Particle
     @vel = (mouth - Vec2d(@x, @y))\normalized! * 200
     @accel = Vec2d(0, 100)
 
-  consume: =>
+  consume: (stage) =>
+    { :head } = stage
+    return if head.puking
+
     @consumed = true
+    if head.hungry_for[@type]
+      print "MMM"
+    else
+      head\puke!
+
+class SteakItem extends FoodItem
+  type: "steak"
+
+class PastaItem extends FoodItem
+  type: "pasta"
+
+class SodaItem extends FoodItem
+  type: "soda"
 
 class FoodPile extends Box
   color: {100, 100, 100}
@@ -213,10 +242,14 @@ class FoodPile extends Box
   throw_dir: Vec2d(20, -100) * 2
   throw_speed: 200
 
+  item_cls: FoodItem
+
   throw: (stage) =>
+    cls = @item_cls
+
     if @inventory[@item] > 0
       x,y = @center!
-      stage.particles\add FoodItem x,y, @throw_dir * @throw_speed, @throw_gravity
+      stage.particles\add cls x,y, @throw_dir * @throw_speed, @throw_gravity
       @inventory[@item] -= 1
     else
       print "ERROR NO #{@item} left"
@@ -230,12 +263,16 @@ class FoodPile extends Box
     @inventory = state.game.inventory
 
 class SteakPile extends FoodPile
+  item_cls: SteakItem
+
   item: "steak"
   color: colors.steak
   throw_dir: Vec2d 0.193022, -0.981194
   x: 9, y: 90
 
 class PastaPile extends FoodPile
+  item_cls: PastaItem
+
   item: "pasta"
   color: colors.pasta
   throw_speed: 220
@@ -243,6 +280,8 @@ class PastaPile extends FoodPile
   x: 40, y: 105
 
 class SodaPile extends FoodPile
+  item_cls: SodaItem
+
   item: "soda"
   color: colors.soda
   throw_speed: 240
