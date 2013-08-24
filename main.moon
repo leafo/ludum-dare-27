@@ -2,6 +2,9 @@ require "lovekit.all"
 
 {graphics: g} = love
 
+export p = (str, ...) ->
+  g.print str\lower!, ...
+
 require "misc"
 require "buy"
 require "feed"
@@ -43,10 +46,10 @@ load_font = (img, chars)->
 love.load = ->
   export fonts = {
     number_font: load_font "images/number_font.png", [[0123456789:]]
+    default: load_font "images/font_thick.png", [[ abcdefghijklmnopqrstuvwxyz-1234567890!.,:;'"?$&/]]
   }
 
-  g.setFont fonts.number_font
-
+  g.setFont fonts.default
   export dispatch = Dispatcher Game!
 
   -- dispatch.update = (dt) =>

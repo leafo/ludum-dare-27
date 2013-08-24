@@ -16,14 +16,29 @@ class Player extends Entity
     @move unpack dir * @speed * dt
     true
 
+
+class Vendor extends Box
+  w: 20
+  h: 20
+
+  new: (@x, @y) =>
+
+  update: (dt) =>
+    true
+
+  draw: =>
+    Box.draw @, {128,200,83}
+
 class BuyStage extends Stage
   new: =>
     super!
     @player = Player 100, 100
 
-    @entities = DrawList!
-    @entities\add @player
-    @entities\add @timer
+    with @entities = DrawList!
+      \add @player
+      \add @timer
+      \add Vendor 10, 50
+      \add Vendor 80, 50
 
   collides: =>
     false
@@ -33,5 +48,5 @@ class BuyStage extends Stage
 
   draw: =>
     @entities\draw!
-    g.print "Buy Stage", 100, 10
+    p "Buy Stage", 100, 10
 

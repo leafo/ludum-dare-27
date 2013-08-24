@@ -8,7 +8,7 @@ class FeedStage extends Stage
 
   draw: =>
     @timer\draw!
-    g.print "Feed Stage", 100, 10
+    p "Feed Stage", 100, 10
 
   update: (dt) =>
     @timer\update dt

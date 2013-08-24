@@ -21,7 +21,7 @@ class Timer
   draw: =>
     old_font = g.getFont!
     g.setFont fonts.number_font
-    g.print tostring(@), @x, @y
+    p tostring(@), @x, @y
 
     g.setFont old_font
 
