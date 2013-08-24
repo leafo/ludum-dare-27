@@ -17,19 +17,47 @@ Sequence.default_scope.shake = (thing, total_time, mx=5, my=5, speed=10, decay_t
 
 
 class Player extends Entity
-  speed: 80
+  speed: 280
+  max_speed: 80
   w: 10
   h: 10
 
   new: (x,y) =>
     super x, y
+    @vel = Vec2d(0,0)
+    @accel = Vec2d(0,0)
 
   update: (dt, stage) =>
+    decel = @speed / 1.5 * dt
+
     if @hit_seq
       @hit_seq\update dt
     else
-      dir = movement_vector!
-      @move unpack dir * @speed * dt
+      @accel = movement_vector!
+      -- need to do this per axis
+
+      if @accel\is_zero!
+        dampen_vector @vel, decel
+      else
+        if @accel[1] == 0
+          -- not moving in x, shrink it
+          @vel[1] = dampen @vel[1], decel
+          nil
+        else
+          if (@accel[1] < 0) == (@vel[1] > 0)
+            @accel[1] *= 2
+
+        if @accel[2] == 0
+          -- not moving in y, shrink it
+          @vel[2] = dampen @vel[2], decel
+        else
+          if (@accel[2] < 0) == (@vel[2] > 0)
+            @accel[2] *= 2
+
+        @vel\adjust unpack @accel * dt * @speed
+        @vel\cap @max_speed
+
+      @move @vel[1] * dt, @vel[2] * dt
 
     -- see if hitting person
     unless @hit_seq
@@ -44,6 +72,9 @@ class Player extends Entity
   take_hit: (thing, stage) =>
     @hit_seq = Sequence ->
       print "player stunned"
+      @accel = Vec2d!
+      @vel = Vec2d!
+
       dist = 15 -- TODO: shrink this with upgrade
 
       dir = (Vec2d(@center!) - Vec2d(thing\center!))\normalized! * dist
@@ -162,7 +193,7 @@ class BuyStage extends Stage
           vendor\buy @
 
   add_people: (num=10) =>
-    return for i=1,num
+    return for i=1,0
       with p = Person @person_drop\random_point!
         @entities\add p
 
