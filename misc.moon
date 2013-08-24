@@ -95,26 +95,31 @@ class HorizBar
   padding: 1
 
   new: (@w, @h, @value=0.5)=>
+    @display_value = @value
 
   update: (dt) =>
+    @display_value = ez_approach @display_value, @value, dt / 5
+    true
 
   draw: (x, y) =>
     g.push!
-    g.setColor 255,255,255
+    val = @display_value
 
     if @border
+      COLOR\push 255,255,255
       g.setLineWidth 0.6
       g.rectangle "line", x, y, @w, @h
 
-      g.setColor @color
-      w = @value * (@w - @padding*2)
+      COLOR\push @color
+      w = val * (@w - @padding*2)
 
       g.rectangle "fill", x + @padding, y + @padding, w, @h - @padding*2
+      COLOR\pop 2
     else
-      g.setColor @color
-      w = @value * @w
+      COLOR\push @color
+      w = val * @w
       g.rectangle "fill", x, y, w, @h
+      COLOR\pop!
 
     g.pop!
-    g.setColor 255,255,255,255
 
