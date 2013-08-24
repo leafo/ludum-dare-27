@@ -53,9 +53,16 @@ class Game
     if @current_stage
       @current_stage\update dt
 
-  on_key: (...) =>
+  on_key: (key, ...) =>
+    if num = key\match "f(%d)"
+      num = tonumber num
+      if new = @stages[num]
+        @current_stage = num
+        @current_stage = new @
+        return
+
     if @current_stage and @current_stage.on_key
-      @current_stage\on_key ...
+      @current_stage\on_key key, ...
 
   draw: =>
     @viewport\apply!

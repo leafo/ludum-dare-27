@@ -1,7 +1,6 @@
 
 {graphics: g, :keyboard} = love
 
-export ^
 
 class Player extends Entity
   speed: 80
@@ -15,6 +14,8 @@ class Player extends Entity
     dir = movement_vector!
     @move unpack dir * @speed * dt
     true
+
+export ^
 
 class Vendor extends Box
   w: 20

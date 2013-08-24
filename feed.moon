@@ -1,29 +1,5 @@
 {graphics: g} = love
 
-export ^
-
-class Head extends Box
-  -- box<(104, 76), (69, 39)>
-  color: { 252, 231, 178 }
-  mouth_color: { 255, 80, 80, 100 }
-
-  x: 100
-  y: 50
-
-  w: 90
-  h: 70
-
-  new: =>
-    super
-    @mouth = Box 104, 76, 70, 40
-    @mouth_hitbox = Box 104, 103, 70, 13
-
-  draw: =>
-    super @color
-    @mouth\draw @mouth_color
-
-  update: (dt) =>
-    true
 
 class Player extends Box
   speed: 100
@@ -56,6 +32,30 @@ class Player extends Box
 
     true
 
+export ^
+
+class Head extends Box
+  -- box<(104, 76), (69, 39)>
+  color: { 252, 231, 178 }
+  mouth_color: { 255, 80, 80, 100 }
+
+  x: 100
+  y: 50
+
+  w: 90
+  h: 70
+
+  new: =>
+    super
+    @mouth = Box 104, 76, 70, 40
+    @mouth_hitbox = Box 104, 103, 70, 13
+
+  draw: =>
+    super @color
+    @mouth\draw @mouth_color
+
+  update: (dt) =>
+    true
 
 class Bat extends Box
   color: { 200, 188, 66 }
