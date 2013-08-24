@@ -16,6 +16,7 @@ class Head extends Box
   new: =>
     super
     @mouth = Box 104, 76, 70, 40
+    @mouth_hitbox = Box 104, 103, 70, 13
 
   draw: =>
     super @color
@@ -23,7 +24,6 @@ class Head extends Box
 
   update: (dt) =>
     true
-
 
 class Player extends Box
   speed: 100
@@ -124,11 +124,16 @@ class FoodItem extends Particle
   life: 4.0
   hit: false
   color: { 255, 255, 255 }
+  consumed: false
 
   draw: =>
     b = Box 0, 0, 3, 3
     b\move_center(@x, @y)
     b\draw @color
+
+  update: (...) =>
+    super ...
+    not @consumed
 
   send_to_mouth: (stage) =>
     @color = {255, 100, 255 }
@@ -137,6 +142,9 @@ class FoodItem extends Particle
     mouth = Vec2d stage.head.mouth\center!
     @vel = (mouth - Vec2d(@x, @y))\normalized! * 200
     @accel = Vec2d(0, 100)
+
+  consume: =>
+    @consumed = true
 
 class FoodPile extends Box
   color: {100, 100, 100}
@@ -203,7 +211,7 @@ class FeedStage extends Stage
       \add @head
       \add_all @food_piles
 
-      -- \add BoxSelector @game.viewport
+      \add BoxSelector @game.viewport
       -- \add VectorSelector @game.viewport
       \add @player
       \add @bat
@@ -217,10 +225,14 @@ class FeedStage extends Stage
     -- see if particles hit anything
     for p in *@particles
       continue unless p.alive
-      continue if p.hit
+      {:x, :y} = p
 
-      if @bat.swinging and @bat\touches_pt p.x, p.y
-        p\send_to_mouth @
+      if p.hit
+        if @head.mouth_hitbox\touches_pt x, y
+          p\consume @
+      else
+        if @bat.swinging and @bat\touches_pt x, y
+          p\send_to_mouth @
 
     @particles\update dt, @
 
