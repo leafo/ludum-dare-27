@@ -159,20 +159,31 @@ class Person extends Entity
   behavior_1: =>
     print "behavior 1"
     Sequence ->
-      @applied = Vec2d.random! * 100
-      apply_force @, 0.1, @applied
+      @applied = Vec2d.random! * rand(90, 110)
+      apply_force @, rand(0.1, 0.2), @applied
       @applied = nil
-      wait 1.0
+      wait wait 0.8, 1.2
       again!
 
   update: (dt, stage) =>
     @seq\update dt if @seq
 
     @vel\adjust unpack @accel * dt
+
+    -- repel powerup
+    -- repel = Vec2d(@center!) - Vec2d(stage.player\center!)
+    -- dist = repel\len!
+    -- dist = 30 - dist
+
+    -- if dist > 0
+    --   @vel\adjust unpack repel\normalized! * dt * 100
+
     if not @applied
-      damp = dt * 2
+      speed = @vel\len!
+      damp = dt * 2 * speed / 3
       if @stunned
-        damp *= 100
+        damp *= 10
+
       dampen_vector @vel, damp
 
     cx, cy = @fit_move @vel[1] * dt, @vel[2] * dt, stage
@@ -197,6 +208,7 @@ class Person extends Entity
     if @shake_x
       g.pop!
 
+    -- p "%0.2f"\format(tostring @vel\len!), @x, @y
 
 export ^
 
@@ -246,7 +258,7 @@ class BuyStage extends Stage
         if @player\touches_box vendor.buy_radius
           vendor\buy @
 
-  add_people: (num=10) =>
+  add_people: (num=30) =>
     return for i=1,num
       with p = Person @person_drop\random_point!
         while @collides p
