@@ -74,6 +74,8 @@ class Bat extends Box
   rest_rot: 2.7018146928204
   swing_rot: 1.7848146928204
 
+  swinging: false
+
   swing: =>
     if @return_progress and @return_progress > 0.8
       @seq = nil
@@ -82,7 +84,10 @@ class Bat extends Box
 
     @seq = Sequence ->
       @return_progress = 0
+      @swinging = true
       tween @, 0.1, rot: @swing_rot
+      @swinging = false
+
       tween @, 0.5, rot: @rest_rot, return_progress: 1
       @seq = nil
 
@@ -117,11 +122,21 @@ class Bat extends Box
 
 class FoodItem extends Particle
   life: 4.0
+  hit: false
+  color: { 255, 255, 255 }
 
   draw: =>
     b = Box 0, 0, 3, 3
     b\move_center(@x, @y)
-    b\draw { 255, 255, 255}
+    b\draw @color
+
+  send_to_mouth: (stage) =>
+    @color = {255, 100, 255 }
+    @hit = true
+
+    mouth = Vec2d stage.head.mouth\center!
+    @vel = (mouth - Vec2d(@x, @y))\normalized! * 200
+    @accel = Vec2d(0, 100)
 
 class FoodPile extends Box
   color: {100, 100, 100}
@@ -134,9 +149,7 @@ class FoodPile extends Box
   throw_speed: 200
 
   throw: (stage) =>
-    print "Throwing"
     x,y = @center!
-
     stage.particles\add FoodItem x,y, @throw_dir * @throw_speed, @throw_gravity
 
   update: (dt) =>
@@ -175,6 +188,7 @@ class FeedStage extends Stage
 
   new: (...) =>
     super ...
+    @head = Head!
     @particles = DrawList!
     @player = Player!
     @bat = Bat!
@@ -186,7 +200,7 @@ class FeedStage extends Stage
     }
 
     with @entities
-      \add Head!
+      \add @head
       \add_all @food_piles
 
       -- \add BoxSelector @game.viewport
@@ -200,9 +214,13 @@ class FeedStage extends Stage
 
   update: (dt) =>
     super dt
-    @particles\update dt, @
+    -- see if particles hit anything
+    for p in *@particles
+      continue unless p.alive
+      continue if p.hit
 
-    if love.mouse.isDown "l"
-      mx, my = @game.viewport\unproject love.mouse.getPosition!
-      print @bat\touches_pt mx, my
+      if @bat.swinging and @bat\touches_pt p.x, p.y
+        p\send_to_mouth @
+
+    @particles\update dt, @
 
