@@ -1,4 +1,4 @@
-{graphics: g} = love
+{graphics: g, :timer} = love
 
 export ^
 
@@ -6,6 +6,7 @@ export ^
 class UpgradeSlot
   current_level: 0
   max_level: 4
+  line_height: 18
 
   on_color: { 200, 80,80 }
   off_color: { 80,80,80 }
@@ -16,20 +17,26 @@ class UpgradeSlot
     true
 
   draw: (x,y) =>
+    old_font = g.getFont!
+    g.setFont fonts.tall
+
     g.push!
     g.translate x, y
-    p "#{@key}: #{@name}", 0,0
+    p "(#{@key})  #{@name}", 0,0
 
-    g.translate 0, 8
+    g.translate 0, 12
     for i=1, @max_level
       COLOR\push i <= @current_level and @on_color or @off_color
-      g.rectangle "fill", 0,0, 10, 3
+      g.rectangle "fill", 0, 0, 10, 3
       COLOR\pop!
       g.translate 12, 0
 
     g.pop!
+    g.setFont old_font
 
 class UpgradeStage extends Stage
+  lazy bg: -> imgfy "images/upgrade_bg.png"
+
   name: "Upgrade Stage"
   money_earned: 0
 
@@ -90,6 +97,10 @@ class UpgradeStage extends Stage
         @game.upgrades[upgrade.name] += 1
 
   draw: =>
+    t = timer.getTime!
+
+    @bg\draw 0,0
+
     super!
 
     g.push!
@@ -103,21 +114,22 @@ class UpgradeStage extends Stage
 
     g.pop!
 
-    -- p "Choose An Upgrade (Press Key)", 20, 25
+    if math.floor(t*2) % 3 > 0
+      p "Choose An Upgrade - Press Key", 12, 120
 
     g.push!
-    g.translate 8, 40
+    g.translate 10, 35
 
     for i, u in ipairs @buy_upgrades
-      u\draw 0, (i - 1) * 15
+      u\draw 0, (i - 1) * UpgradeSlot.line_height
 
     g.pop!
 
     g.push!
-    g.translate 95, 40
+    g.translate 100, 35
 
     for i, u in ipairs @feed_upgrades
-      u\draw 0, (i - 1) * 15
+      u\draw 0, (i - 1) * UpgradeSlot.line_height
 
     g.pop!
     @hud\draw!
