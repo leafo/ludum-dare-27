@@ -364,8 +364,12 @@ class Vendor extends Box
   buy: (stage) =>
     return if stage.player.hit_seq
     return unless @cooloff == 0
+    print "quantity:", quantity
+    return if @quantity == 0
+
     @cooloff = @@cooloff
     inventory = stage.game.inventory
+
 
     if inventory.money < @price
       print "NO MONEY"
