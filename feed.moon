@@ -204,22 +204,29 @@ class Bat extends Box
 
 
 class FoodItem extends Particle
+  lazy sprite: -> Spriter "images/tiles.png", 10, 10
+
   life: 4.0
   hit: false
   color: { 255, 255, 255 }
   consumed: false
+
+  ox: 0
+  oy: 0
 
   new: (...) =>
     super ...
     @color = colors[@type]
 
   draw: =>
+    @sprite\draw @cell, @x - @ox, @y - @oy
+
     b = Box 0, 0, 3, 3
     b\move_center(@x, @y)
     b\draw @color
 
-  update: (...) =>
-    super ...
+  update: (dt, ...) =>
+    super dt, ...
     not @consumed
 
   send_to_mouth: (stage) =>
@@ -241,12 +248,20 @@ class FoodItem extends Particle
       head\puke!
 
 class SteakItem extends FoodItem
+  ox: 10, oy: 10
+  cell: "9,100,21,19"
+
   type: "steak"
 
 class PastaItem extends FoodItem
+  ox: 11, oy: 11
+  cell: "49,100,22,22"
+
   type: "pasta"
 
 class SodaItem extends FoodItem
+  ox: 9, oy: 9
+  cell: "91,102,18,18"
   type: "soda"
 
 class FoodPile extends Box
@@ -363,3 +378,6 @@ class FeedStage extends Stage
 
     @particles\update dt, @
 
+
+
+{ :Head, :Bat, :FeedHud, :Player, :FoodItem, :FoodPile, :FeedStage }

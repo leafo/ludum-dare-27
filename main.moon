@@ -13,6 +13,8 @@ require "feed"
 require "upgrade"
 
 class Game
+  paused: false
+
   new: =>
     @stage_i = 1
     @stages = {
@@ -24,9 +26,9 @@ class Game
     @inventory = {
       money: 99
 
-      steak: 10
-      pasta: 10
-      soda: 10
+      steak: 100
+      pasta: 100
+      soda: 100
     }
 
     @upgrades = {
@@ -51,12 +53,16 @@ class Game
     @viewport = Viewport scale: 4
 
   update: (dt) =>
+    return if @paused
     @sequence\update dt
 
     if @current_stage
       @current_stage\update dt
 
   on_key: (key, ...) =>
+    if key == "p"
+      @paused = not @paused
+
     if num = key\match "f(%d)"
       num = tonumber num
       if new = @stages[num]
