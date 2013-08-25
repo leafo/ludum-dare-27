@@ -137,7 +137,7 @@ class Head extends Box
     @health = 1 if @health > 1
 
 class Bat extends Box
-  lazy sprite: -> Spriter "images/tiles.png", 10, 10
+  lazy sprite: -> Spriter "images/tiles.png"
 
   color: { 200, 188, 66 }
 
@@ -204,7 +204,7 @@ class Bat extends Box
 
 
 class FoodItem extends Particle
-  lazy sprite: -> Spriter "images/tiles.png", 10, 10
+  lazy sprite: -> Spriter "images/tiles.png"
 
   life: 4.0
   hit: false
@@ -265,6 +265,8 @@ class SodaItem extends FoodItem
   type: "soda"
 
 class FoodPile extends Box
+  lazy sprite: -> Spriter "images/tiles.png"
+
   color: {100, 100, 100}
 
   w: 20
@@ -289,7 +291,12 @@ class FoodPile extends Box
   update: (dt) =>
     true
 
-  draw: => super @color
+  draw_back: =>
+    @sprite\draw "10,180,34,40", @x - 7, @y - 7
+
+  draw: =>
+    @sprite\draw "50,180,26,20", @x - 3, @y
+    Box.outline @, @color
 
   new: (state) =>
     @inventory = state.game.inventory
@@ -359,6 +366,10 @@ class FeedStage extends Stage
     FeedHud @
 
   draw: =>
+    for e in *@entities
+      if e.draw_back
+        e\draw_back!
+
     super!
     @particles\draw!
 
