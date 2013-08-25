@@ -7,7 +7,7 @@ upgrades = {
     "Move faster in mall"
   }
 
-  barting: {
+  bartering: {
     "Greater chance of two for one"
   }
 
@@ -42,7 +42,6 @@ class RevealString extends Sequence
 
     super ->
       while @chr < #@str
-        print "tick"
         @chr += 1
         wait rate
 

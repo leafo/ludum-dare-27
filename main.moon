@@ -19,7 +19,7 @@ class Game
     @stage_i = 1
     @stages = {
       -- BuyStage
-      -- FeedStage
+      FeedStage
       UpgradeStage
     }
 
@@ -36,6 +36,7 @@ class Game
       sneakers: 0
       bartering: 0
       guts: 0
+      hair: 0
 
       -- feed
       rollerskates: 0
