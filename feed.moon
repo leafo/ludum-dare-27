@@ -167,6 +167,7 @@ class Head
   y: 25
 
   health: 0.5
+  min_rand: 0
 
   new: =>
     super
@@ -185,15 +186,19 @@ class Head
       for k in pairs @hungry_for
         @hungry_for[k] = true
 
-      delta = math.abs 0.5 - random_normal!
-      to_hide = math.floor delta / 0.09
+      order = shuffle [key for key in pairs @hungry_for ]
+      r = math.random! + @min_rand
 
-      while to_hide > 0
-        not_hungry = pick_one unpack [k for k,v in pairs @hungry_for when v]
-        @hungry_for[not_hungry] = false
-        to_hide -= 1
+      if r > 0.2
+        @hungry_for[order[1]] = false
 
-      wait 1
+      if r > 0.6
+        @hungry_for[order[2]] = false
+
+      if r > 0.99
+        @hungry_for[order[3]] = false
+
+      wait rand 2, 3
       again!
 
   draw: =>
