@@ -7,6 +7,18 @@ colors = {
   gray: { 80,80,80 }
 }
 
+on_sprites = {
+  steak: "40,130,10,10"
+  pasta: "50,130,10,10"
+  soda: "60,130,10,10"
+}
+
+off_sprites = {
+  steak: "40,140,10,10"
+  pasta: "50,140,10,10"
+  soda: "60,140,10,10"
+}
+
 class FeedHud extends Hud
   -- box<(113, 2), (83, 12)>
   lazy {
@@ -14,17 +26,6 @@ class FeedHud extends Hud
     head_sprite: -> Spriter "images/head.png"
   }
 
-  on_sprites: {
-    steak: "40,130,10,10"
-    pasta: "50,130,10,10"
-    soda: "60,130,10,10"
-  }
-
-  off_sprites: {
-    steak: "40,140,10,10"
-    pasta: "50,140,10,10"
-    soda: "60,140,10,10"
-  }
 
   new: (...) =>
     super ...
@@ -33,8 +34,6 @@ class FeedHud extends Hud
   draw: =>
     super!
     hungry_for = @stage.head.hungry_for
-
-    @health = HorizBar 70, 6
 
     g.push!
 
@@ -53,9 +52,9 @@ class FeedHud extends Hud
     for i, food in ipairs {"steak", "pasta", "soda"}
       hungry = hungry_for[food]
       cell = if hungry
-        @on_sprites[food]
+        on_sprites[food]
       else
-        @off_sprites[food]
+        off_sprites[food]
 
       x, y = 4 + (i - 1) * (w + 4), 4
 
@@ -345,10 +344,9 @@ class FoodItem extends Particle
 
   draw: =>
     @sprite\draw @cell, @x, @y, @rot, 1, 1, @ox, @oy
-
-    b = Box 0, 0, 3, 3
-    b\move_center(@x, @y)
-    b\draw @color
+    -- b = Box 0, 0, 3, 3
+    -- b\move_center(@x, @y)
+    -- b\draw @color
 
   update: (dt, ...) =>
     super dt, ...
@@ -393,6 +391,7 @@ class SodaItem extends FoodItem
 
 class FoodPile extends Box
   lazy sprite: -> Spriter "images/tiles.png"
+  key: "X"
 
   color: {100, 100, 100}
 
@@ -420,16 +419,19 @@ class FoodPile extends Box
 
   draw_back: =>
     @sprite\draw "10,180,34,40", @x - 7, @y - 7
+    p @key, @x + 7, @y - 10
 
   draw: =>
     @sprite\draw "50,180,26,20", @x - 3, @y
-    Box.outline @, @color
+    @sprite\draw on_sprites[@item], @x + 5, @y + 5
+    -- Box.outline @, @color
 
   new: (state) =>
     @inventory = state.game.inventory
 
 class SteakPile extends FoodPile
   item_cls: SteakItem
+  key: "1"
 
   item: "steak"
   color: colors.steak
@@ -438,6 +440,7 @@ class SteakPile extends FoodPile
 
 class PastaPile extends FoodPile
   item_cls: PastaItem
+  key: "2"
 
   item: "pasta"
   color: colors.pasta
@@ -447,6 +450,7 @@ class PastaPile extends FoodPile
 
 class SodaPile extends FoodPile
   item_cls: SodaItem
+  key: "3"
 
   item: "soda"
   color: colors.soda
