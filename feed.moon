@@ -103,6 +103,10 @@ class Player extends Box
     @anim\set_state "throw"
 
   draw: =>
+    COLOR\push 0,0,0, 120
+    g.rectangle "fill", @x - 5, @y + 19, 10, 3
+    COLOR\pop!
+
     if @anim.current_name == "throw"
       @anim\draw @x - 8, @y
     else
