@@ -369,10 +369,8 @@ class BuyStage extends Stage
   bounding_box: Box 19, 39, 162, 92
 
   on_key: (char) =>
-    if char == " "
-      for vendor in *@vendors
-        if @player\touches_box vendor.buy_radius
-          vendor\buy @
+    if char == " " and @vendor_in_range
+      @vendor_in_range\buy @
 
   make_people: (num=10) =>
     return for i=1,num
@@ -387,6 +385,15 @@ class BuyStage extends Stage
 
     not @bounding_box\contains_box thing
 
+  update: (...) =>
+    super ...
+    @vendor_in_range = nil
+
+    for vendor in *@vendors
+      if @player\touches_box vendor.buy_radius
+        @vendor_in_range = vendor
+        break
+
   draw: =>
     @map\draw @viewport
     -- draw shadows
@@ -395,6 +402,13 @@ class BuyStage extends Stage
         item\draw_shadow!
 
     super!
+
+    if vendor = @vendor_in_range
+      COLOR\push 0,0,0, 180
+      g.rectangle "fill", 15, 60, @game.viewport.w - 30,10
+      COLOR\pop!
+      p "'Space' to Buy #{vendor.type} for $#{vendor.price}", 22, 61
+
     @hud\draw!
 
   new: (...) =>
