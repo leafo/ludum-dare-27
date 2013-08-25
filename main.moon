@@ -99,7 +99,7 @@ love.load = ->
   }
 
   export sfx = lovekit.audio.Audio "sounds"
-  sfx.play_music = ->
+  -- sfx.play_music = ->
   -- sfx\preload { }
 
   g.setFont fonts.default

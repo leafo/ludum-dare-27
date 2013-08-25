@@ -514,7 +514,7 @@ class FeedStage extends Stage
       \add @player
       \add @bat
 
-    sfx\play_music "stage2"
+    sfx\play_music "stage2", false
 
   make_hud: =>
     FeedHud @

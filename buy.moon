@@ -475,7 +475,7 @@ class BuyStage extends Stage
       \add @units
       \add BoxSelector @game.viewport
 
-    sfx\play_music "stage1"
+    sfx\play_music "stage1", false
 
 
 { :Player, :Person, :Vendor, :BuyStage }

@@ -138,7 +138,7 @@ class UpgradeStage extends Stage
       \add @emitter
       \add BoxSelector @game.viewport
 
-    sfx\play_music "stage3"
+    sfx\play_music "stage3", false
 
   on_key: (key) =>
     return if @upgraded
