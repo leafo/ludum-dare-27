@@ -217,9 +217,11 @@ class FoodItem extends Particle
   new: (...) =>
     super ...
     @color = colors[@type]
+    @rot = 0
+    @dr = random_normal! - 0.5
 
   draw: =>
-    @sprite\draw @cell, @x - @ox, @y - @oy
+    @sprite\draw @cell, @x, @y, @rot, 1, 1, @ox, @oy
 
     b = Box 0, 0, 3, 3
     b\move_center(@x, @y)
@@ -227,11 +229,13 @@ class FoodItem extends Particle
 
   update: (dt, ...) =>
     super dt, ...
+    @rot += @dr
     not @consumed
 
   send_to_mouth: (stage) =>
     @color = {255, 100, 255 }
     @hit = true
+    @dr = (random_normal! - 0.5) * 2
 
     mouth = Vec2d stage.head.mouth\center!
     @vel = (mouth - Vec2d(@x, @y))\normalized! * 200
