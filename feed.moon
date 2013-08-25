@@ -460,6 +460,7 @@ class SodaPile extends FoodPile
 
 class FeedStage extends Stage
   name: "Feed Stage"
+  lazy bg: -> imgfy "images/feed_bg.png"
 
   on_key: (key) =>
     pile_num = tonumber key
@@ -497,6 +498,8 @@ class FeedStage extends Stage
     FeedHud @
 
   draw: =>
+    @bg\draw 0,0
+
     for e in *@entities
       if e.draw_back
         e\draw_back!
