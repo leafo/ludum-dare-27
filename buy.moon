@@ -229,12 +229,17 @@ class Person extends Entity
 
     true
 
+  draw_shadow: =>
+    COLOR\push 0,0,0, 20
+    g.rectangle "fill", @x - 3, @y + 4, 10, 3
+    COLOR\pop!
+
   draw: =>
     if @shake_x
       g.push!
       g.translate @shake_x, @shake_y
 
-    super @stunned and {255,0,0} or @color
+    -- super @stunned and {255,0,0} or @color
     @anim\draw @x - @ox, @y - @oy
 
     if @shake_x
@@ -245,7 +250,10 @@ class Person extends Entity
 export ^
 
 class Vendor extends Box
-  lazy sprite: -> Spriter "images/tiles.png", 10, 10
+  lazy {
+    tiles: -> Spriter "images/tiles.png", 10, 10
+    sprite: -> Spriter "images/characters.png", 10, 10
+  }
 
   w: 18
   h: 11
@@ -256,8 +264,11 @@ class Vendor extends Box
 
   new: (@x, @y, @type) =>
     @buy_radius = @scale 1.8, 1.8, true
+    @anim = @sprite\seq { "89,60,10,10", "100,60,10,10" }, random_normal!
+    @anim\update math.random!
 
   update: (dt, stage) =>
+    @anim\update dt
     @cooloff -= dt
     @cooloff = 0 if @cooloff < 0
     true
@@ -277,9 +288,15 @@ class Vendor extends Box
     stage.game.inventory.money -= @price
 
   draw: =>
-    @sprite\draw "34,77,12,5", @x + 3, @y
-    @sprite\draw "10,64,20,26", @x - 1, @y - 13
-    Box.draw @, {0,0,0, 200}
+    @tiles\draw "34,77,12,5", @x + 3, @y
+    @anim\draw @x + 4, @y - 3
+    @tiles\draw "10,64,20,26", @x - 1, @y - 13
+    -- Box.draw @, {0,0,0, 200}
+
+  draw_shadow: =>
+    COLOR\push 0,0,0, 30
+    g.rectangle "fill", @x - 1, @y + 2, @w + 2, @h
+    COLOR\pop!
 
 class BuyStage extends Stage
   name: "Buy Stage"
@@ -308,13 +325,16 @@ class BuyStage extends Stage
 
   draw: =>
     @map\draw @viewport
+    -- draw shadows
+    for item in *@units
+      if item.draw_shadow
+        item\draw_shadow!
+
     super!
 
   new: (...) =>
     super ...
     @player = Player 100, 100
-
-    -- box<(31, 36), (18, 12)> -- steak
 
     @vendors = {
       Vendor 31, 37, "steak"

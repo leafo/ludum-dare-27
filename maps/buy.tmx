@@ -8,6 +8,11 @@
    eJztzCsCQEAYhdEfGRkZedZgEAVRsADRa/u+YAdXECacepyZuQ918OhFA0ZMiBCLEsxYkCIT5Vjfr0ApqsIXvp98NRpRiw07DpyiCzceXD0vSQ==
   </data>
  </layer>
+ <layer name="decor" width="20" height="15">
+  <data encoding="base64" compression="zlib">
+   eJztzDESwBAUAFENQhdCh3D/Q9o7fKP6O/PaNeZeFg4eDwKi4PciIeNDQRX8GjoGfkwswU/TtLNtNP8BYA==
+  </data>
+ </layer>
  <layer name="backs" width="20" height="15" visible="0">
   <data encoding="base64" compression="zlib">
    eJxjYBi5IAKII6moPgWIU0kwj1T1o4A0QGr8EgKj8TXwAACbxARv
