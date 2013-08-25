@@ -8,17 +8,17 @@
    eJztzCsCQEAYhdEfGRkZedZgEAVRsADRa/u+YAdXECacepyZuQ918OhFA0ZMiBCLEsxYkCIT5Vjfr0ApqsIXvp98NRpRiw07DpyiCzceXD0vSQ==
   </data>
  </layer>
- <layer name="backs" width="20" height="15">
+ <layer name="backs" width="20" height="15" visible="0">
   <data encoding="base64" compression="zlib">
    eJxjYBi5IAKII6moPgWIU0kwj1T1o4A0QGr8EgKj8TXwAACbxARv
   </data>
  </layer>
- <layer name="fronts" width="20" height="15">
+ <layer name="fronts" width="20" height="15" visible="0">
   <data encoding="base64" compression="zlib">
    eJxjYKAfYAViNiBmB2IOIOYEYi4S9HsBsTcSXxCIhYBYGIhFgFgUiMXwqEcHYUAcjsSXBWI5IJYHYgUgVgRiJTzq0UESECfj8wCF6oc7IBRfpAJC8UUqGI2vgQcAVCUHdQ==
   </data>
  </layer>
- <layer name="foods" width="20" height="15">
+ <layer name="foods" width="20" height="15" visible="0">
   <data encoding="base64" compression="zlib">
    eJztzEcKgEAQBVGvbc4553hY6wCzmMUIIn54q25K056ZDgMmLIl/Gw5ceIJ7jAQpMolejgIlKsG9x4ARk0RvxoIVm8T/1+cjQIhIQa9Ggxadgt6OAycuBb1/79gN/sETew==
   </data>

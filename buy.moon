@@ -245,8 +245,11 @@ class Person extends Entity
 export ^
 
 class Vendor extends Box
+  lazy sprite: -> Spriter "images/tiles.png", 10, 10
+
   w: 18
   h: 11
+
   cooloff: 0.05
 
   price: 8
@@ -274,6 +277,8 @@ class Vendor extends Box
     stage.game.inventory.money -= @price
 
   draw: =>
+    @sprite\draw "34,77,12,5", @x + 3, @y
+    @sprite\draw "10,64,20,26", @x - 1, @y - 13
     Box.draw @, {0,0,0, 200}
 
 class BuyStage extends Stage
@@ -325,11 +330,11 @@ class BuyStage extends Stage
     with @units
       \add @player
       \add_all @people
+      \add_all @vendors
 
     @map = TileMap.from_tiled "maps.buy"
 
     with @entities
-      \add_all @vendors
       \add @units
       -- \add BoxSelector @game.viewport
 
