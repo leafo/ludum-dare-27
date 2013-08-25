@@ -1,4 +1,4 @@
-{graphics: g} = love
+{graphics: g, :timer} = love
 
 colors = {
   steak: { 250, 92, 102 }
@@ -42,7 +42,10 @@ class FeedHud extends Hud
 
 
 class Player extends Box
+  lazy sprite: -> Spriter "images/characters.png", 16, 32
+
   speed: 100
+  throw_time: -1000
 
   w: 8
   h: 10
@@ -53,6 +56,7 @@ class Player extends Box
   goto_pile: (pile, stage) =>
     if pile == @current_pile
       pile\throw stage if not @seq
+      @on_throw pile
       return
 
     x,y = pile\center!
@@ -62,15 +66,55 @@ class Player extends Box
       tween @, len / @speed, { :x, :y } -- , lerp
       pile\throw stage
       @seq = nil
+      @on_throw pile
+
+  on_throw: =>
+    @throw_time = timer.getTime!
+    @anim\set_state "throw"
 
   draw: =>
-    super {100,255,100}
+    if @anim.current_name == "throw"
+      @anim\draw @x - 8, @y
+    else
+      @anim\draw @x - 5, @y
+
+    -- super {100,255,100}
 
   update: (dt) =>
+    dx = @x - @xx
+    @xx = @x
+
+    state = if dx == 0
+      if timer.getTime! - @throw_time < 0.3
+        "throw"
+      else
+        "stand"
+    elseif dx < 0
+      "walk_left"
+    else
+      "walk_right"
+
+    @anim\set_state state
+
+    @anim\update dt
+
     if @seq
       @seq\update dt
 
     true
+
+  new: =>
+    with @sprite
+      @anim = StateAnim "stand", {
+        stand: \seq { "75,33,10,21", "60,33,10,21" }, 0.4
+        throw: \seq { "40,33,16,21", "22,33,16,21" }, 0.15
+
+        walk_left: \seq { "116,33,10,21", "128,33,10,21" }, 0.3
+        walk_right: \seq { "116,33,10,21", "128,33,10,21" }, 0.3, true
+      }
+
+    -- used to delta
+    @xx = @x
 
 export ^
 

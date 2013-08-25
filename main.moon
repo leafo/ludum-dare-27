@@ -24,11 +24,11 @@ class Game
     }
 
     @inventory = {
-      money: 99
+      money: 490
 
-      steak: 100
-      pasta: 100
-      soda: 100
+      steak: 34
+      pasta: 43
+      soda: 23
     }
 
     @upgrades = {
