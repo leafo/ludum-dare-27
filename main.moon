@@ -83,6 +83,7 @@ love.load = ->
   export fonts = {
     number_font: load_font "images/number_font.png", [[0123456789:]]
     default: load_font "images/font_thick.png", [[ abcdefghijklmnopqrstuvwxyz-1234567890!.,:;'"?$&/]]
+    tall: load_font "images/tall_font.png", [[abcdefghijklmnopqrstuvwxyz.() ]]
   }
 
   g.setFont fonts.default
