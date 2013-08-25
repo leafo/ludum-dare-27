@@ -51,6 +51,7 @@ class FeedHud extends Hud
     w = 10
     for i, food in ipairs {"steak", "pasta", "soda"}
       hungry = hungry_for[food]
+
       cell = if hungry
         on_sprites[food]
       else
@@ -170,6 +171,7 @@ class Head
 
   new: =>
     super
+    @t = timer.getTime()
     @mouth_hitbox = Box 120, 95, 36, 30
 
     @hungry_for = {
@@ -186,6 +188,7 @@ class Head
 
       delta = math.abs 0.5 - random_normal!
       to_hide = math.floor delta / 0.09
+      to_hide = 3
 
       while to_hide > 0
         not_hungry = pick_one unpack [k for k,v in pairs @hungry_for when v]
@@ -197,7 +200,7 @@ class Head
 
   draw: =>
     g.push!
-    t = timer.getTime()
+    t = @t
 
     cx = @x + 30
     cy = @y + 54
@@ -207,6 +210,9 @@ class Head
     g.translate -cx, -cy
 
     -- Box(0,0,3,3)\move_center(@x, @y)\draw {255,100,100,100}
+
+    if @puking
+      COLOR\push 234,255,199
 
     -- eyes
     COLOR\push 255,255,255
@@ -219,6 +225,7 @@ class Head
       15, 10
 
     COLOR\pop!
+    COLOR\pop! if @puking
 
     -- left pupil
     @sprite\draw "64,15,5,4",
@@ -229,20 +236,25 @@ class Head
       @x + 44 + math.cos(2 + t * 0.9), @y + 44 + math.sin(3 + t * 1.1)
     -- stop eyes
 
-
     -- head and mouth
     @sprite\draw "108,22,88,120", @x, @y
     @sprite\draw "57,29,33,30",
-      @x + 10, @y + 84 + math.abs(math.sin(timer.getTime! * 5) * 10)
+      @x + 10, @y + 84 + math.abs(math.sin(t * 5) * 10)
 
+    if @puking
+      @puke_anim\draw @x - 21, @y + 77
 
     -- @mouth_hitbox\draw { 255,255,255,100 }
-    -- @puke_anim\draw @x - 21, @y + 77
 
     g.pop!
 
 
   update: (dt) =>
+    speed_mul = 1
+    speed_mul = 4 if @puking
+
+    @t += dt * speed_mul
+
     @puke_anim\update dt
 
     @health -= dt / 10
@@ -253,6 +265,7 @@ class Head
     true
 
   puke: =>
+    @puke_anim\reset!
     @puking = Sequence ->
       print "I AM PUKING"
       wait 1.0
