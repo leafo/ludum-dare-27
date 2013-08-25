@@ -100,7 +100,19 @@ love.load = ->
 
   export sfx = lovekit.audio.Audio "sounds"
   -- sfx.play_music = ->
-  -- sfx\preload { }
+  sfx\preload {
+    "bat_hit"
+    "eat_food"
+    "hit"
+    "ok"
+    "puke"
+    "purchase"
+    "step"
+    "throw"
+    "error"
+    "swing"
+    "get_money"
+  }
 
   g.setFont fonts.default
   export dispatch = Dispatcher Game!

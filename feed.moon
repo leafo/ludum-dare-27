@@ -26,7 +26,6 @@ class FeedHud extends Hud
     head_sprite: -> Spriter "images/head.png"
   }
 
-
   new: (...) =>
     super ...
     @health = HorizBar 70, 6
@@ -99,6 +98,7 @@ class Player extends Box
       @on_throw pile
 
   on_throw: =>
+    sfx\play "throw"
     @throw_time = timer.getTime!
     @anim\set_state "throw"
 
@@ -268,6 +268,7 @@ class Head
     true
 
   puke: =>
+    sfx\play "puke"
     @puke_anim\reset!
     @puking = Sequence ->
       print "I AM PUKING"
@@ -304,6 +305,7 @@ class Bat extends Box
       @seq = nil
 
     return if @seq
+    sfx\play "swing"
 
     @seq = Sequence ->
       @return_progress = 0
@@ -374,6 +376,7 @@ class FoodItem extends Particle
     not @consumed
 
   send_to_mouth: (stage) =>
+    sfx\play "bat_hit"
     @color = {255, 100, 255 }
     @hit = true
     @dr = (random_normal! - 0.5) * 2
@@ -385,6 +388,8 @@ class FoodItem extends Particle
   consume: (stage) =>
     { :head } = stage
     return if head.puking
+
+    sfx\play "eat_food"
 
     @consumed = true
     if head.hungry_for[@type]

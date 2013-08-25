@@ -63,6 +63,9 @@ class Player extends Entity
   speed: 280
   max_speed: 80
 
+  step_time: 0
+  step_rate: 0.25
+
   w: 4
   h: 6
 
@@ -117,11 +120,22 @@ class Player extends Entity
       "stunned"
     else
       if @vel\is_zero!
+        @step_time = @step_rate
+        @walking = false
         "stand"
       elseif @vel[1] > 0
+        @walking = true
+        @step_time += dt
         "walk_right"
       else
+        @walking = true
+        @step_time += dt
         "walk_left"
+
+
+    if @walking and @step_time >= @step_rate
+      sfx\play "step"
+      @step_time = 0
 
     @anim\set_state state
 
@@ -147,7 +161,9 @@ class Player extends Entity
 
   take_hit: (thing, stage) =>
     @hit_seq = Sequence ->
-      print "player stunned"
+      -- print "player stunned"
+      sfx\play "hit"
+
       @accel = Vec2d!
       dir = (Vec2d(@center!) - Vec2d(thing\center!))\normalized! * 3000
       apply_force @, 0.1, dir
@@ -364,22 +380,21 @@ class Vendor extends Box
   buy: (stage) =>
     return if stage.player.hit_seq
     return unless @cooloff == 0
-    print "quantity:", quantity
     return if @quantity == 0
 
     @cooloff = @@cooloff
     inventory = stage.game.inventory
 
-
     if inventory.money < @price
-      print "NO MONEY"
+      -- print "NO MONEY"
       return
 
-    print "BUYING #{@type} for #{@price}"
+    -- print "BUYING #{@type} for #{@price}"
     stage.game.inventory[@type] += 1
     stage.game.inventory.money -= @price
 
     stage.entities\add MoneyEmitter @price, stage, @x, @y
+    true
 
   draw: =>
     @tiles\draw "34,77,12,5", @x + 3, @y
@@ -408,7 +423,10 @@ class BuyStage extends Stage
 
   on_key: (char) =>
     if char == " " and @vendor_in_range
-      @vendor_in_range\buy @
+      if @vendor_in_range\buy @
+        sfx\play "purchase"
+      else
+        sfx\play "error"
 
   make_people: (num=10) =>
     return for i=1,num

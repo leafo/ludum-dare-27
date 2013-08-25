@@ -131,6 +131,7 @@ class UpgradeStage extends Stage
         @money_earned += earned
 
         @particles\add MoneyEmitter\make_particle x, y
+        sfx\play "get_money"
         wait 0.1
         again!
 
@@ -145,6 +146,8 @@ class UpgradeStage extends Stage
 
     for upgrade in all_values @buy_upgrades, @feed_upgrades
       if upgrade.key == key and upgrade.current_level < upgrade.max_level
+        sfx\play "ok"
+
         @upgraded = upgrade
         upgrade.current_level += 1
         @game.upgrades[upgrade.name] += 1
