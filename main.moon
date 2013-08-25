@@ -39,7 +39,7 @@ class Game
 
       -- feed
       rollerskates: 0
-      laxitives: 0
+      laxatives: 0
       fiber: 0
       organization: 0
     }

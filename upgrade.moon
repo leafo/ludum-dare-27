@@ -2,6 +2,55 @@
 
 export ^
 
+upgrades = {
+  sneakers: {
+    "Move faster in mall"
+  }
+
+  barting: {
+    "Greater chance of two for one"
+  }
+
+  guts: {
+    "Decrease stunned time"
+  }
+
+  hair: {
+    "Shoppers are repelled from you"
+  }
+
+  rollerskates: {
+    "Move faster between crates"
+  }
+
+  laxatives: {
+    "Puking doesn't last as long"
+  }
+
+  fiber: {
+    "Satisfaction goes down slower"
+  }
+
+  organization: {
+    "Toss food quicker"
+  }
+}
+
+class RevealString extends Sequence
+  new: (@str, @x, @y, rate=0.05) =>
+    @chr = 0
+
+    super ->
+      while @chr < #@str
+        print "tick"
+        @chr += 1
+        wait rate
+
+      while true
+        wait 100
+
+  draw: =>
+    p @str\sub(1, @chr), @x, @y
 
 class UpgradeSlot
   current_level: 0
@@ -15,6 +64,9 @@ class UpgradeSlot
 
   update: (dt) =>
     true
+
+  description: =>
+    upgrades[@name][1]
 
   draw: (x,y) =>
     old_font = g.getFont!
@@ -55,7 +107,7 @@ class UpgradeStage extends Stage
 
     @feed_upgrades = {
       u "rollerskates"
-      u "laxitives"
+      u "laxatives"
       u "fiber"
       u "organization"
     }
@@ -92,9 +144,12 @@ class UpgradeStage extends Stage
 
     for upgrade in all_values @buy_upgrades, @feed_upgrades
       if upgrade.key == key and upgrade.current_level < upgrade.max_level
-        @upgraded = true
+        @upgraded = upgrade
         upgrade.current_level += 1
         @game.upgrades[upgrade.name] += 1
+        name = "#{upgrade.name} lv.#{@game.upgrades[upgrade.name]}"
+        @entities\add RevealString name, 10, 110
+        @entities\add RevealString upgrade\description!, 10, 120
 
   draw: =>
     t = timer.getTime!
@@ -114,8 +169,9 @@ class UpgradeStage extends Stage
 
     g.pop!
 
-    if math.floor(t*2) % 3 > 0
-      p "Choose An Upgrade - Press Key", 12, 120
+    unless @upgraded
+      if math.floor(t*2) % 3 > 0
+        p "Choose An Upgrade - Press Key", 12, 120
 
     g.push!
     g.translate 10, 35
@@ -132,6 +188,7 @@ class UpgradeStage extends Stage
       u\draw 0, (i - 1) * UpgradeSlot.line_height
 
     g.pop!
+
     @hud\draw!
 
   update: (dt, ...) =>
