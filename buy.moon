@@ -1,5 +1,11 @@
 
-{graphics: g, :keyboard} = love
+{graphics: g, :keyboard, :timer} = love
+
+mini_sprites = {
+  steak: "40,130,10,10"
+  pasta: "50,130,10,10"
+  soda: "60,130,10,10"
+}
 
 Sequence.default_scope.shake = (thing, total_time, mx=5, my=5, speed=10, decay_to=0) ->
   time = total_time
@@ -346,6 +352,9 @@ class Vendor extends Box
     @tiles\draw "34,77,12,5", @x + 3, @y
     @anim\draw @x + 4, @y - 3
     @tiles\draw "10,64,20,26", @x - 1, @y - 13
+
+    @tiles\draw mini_sprites[@type], @x + 4, @y - 16 + math.sin(timer.getTime() * 4)
+
     -- Box.draw @, {0,0,0, 200}
 
   draw_shadow: =>
@@ -386,6 +395,7 @@ class BuyStage extends Stage
         item\draw_shadow!
 
     super!
+    @hud\draw!
 
   new: (...) =>
     super ...
@@ -412,5 +422,8 @@ class BuyStage extends Stage
     with @entities
       \add @units
       -- \add BoxSelector @game.viewport
+
+    sfx\play_music "stage1"
+
 
 { :Player, :Person, :Vendor, :BuyStage }

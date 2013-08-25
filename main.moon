@@ -18,8 +18,8 @@ class Game
   new: =>
     @stage_i = 1
     @stages = {
-      -- BuyStage
-      FeedStage
+      BuyStage
+      -- FeedStage
       -- UpgradeState
     }
 
@@ -93,6 +93,10 @@ love.load = ->
     default: load_font "images/font_thick.png", [[ abcdefghijklmnopqrstuvwxyz-1234567890!.,:;'"?$&/]]
     tall: load_font "images/tall_font.png", [[abcdefghijklmnopqrstuvwxyz.() ]]
   }
+
+  export sfx = lovekit.audio.Audio "sounds"
+  sfx.play_music = ->
+  -- sfx\preload { }
 
   g.setFont fonts.default
   export dispatch = Dispatcher Game!

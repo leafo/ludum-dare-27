@@ -52,6 +52,8 @@ class UpgradeState extends Stage
       u "organization"
     }
 
+    sfx\play_music "stage3"
+
   on_key: (key) =>
     return if @upgraded
 
