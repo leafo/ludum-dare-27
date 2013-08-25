@@ -118,7 +118,7 @@ class Player extends Box
 
 export ^
 
-class Head extends Box
+class Head
   lazy {
     sprite: -> Spriter "images/head.png"
     puke_sprite: -> Spriter "images/puke.png", 60, 49
@@ -129,18 +129,14 @@ class Head extends Box
   mouth_color: { 255, 80, 80, 100 }
   puke_color: { 71, 128, 78 }
 
-  x: 100
-  y: 50
-
-  w: 90
-  h: 70
+  x: 110
+  y: 25
 
   health: 0.5
 
   new: =>
     super
-    @mouth = Box 104, 76, 70, 40
-    @mouth_hitbox = Box 104, 103, 70, 13
+    @mouth_hitbox = Box 120, 95, 36, 30
 
     @hungry_for = {
       steak: true
@@ -166,10 +162,51 @@ class Head extends Box
       again!
 
   draw: =>
-    super @color
-    @mouth\draw @puking and @puke_color or @mouth_color
+    g.push!
+    t = timer.getTime()
 
-    @puke_anim\draw 10,10
+    cx = @x + 30
+    cy = @y + 54
+
+    g.translate cx, cy
+    g.rotate math.sin(t * 5) / 20
+    g.translate -cx, -cy
+
+    -- Box(0,0,3,3)\move_center(@x, @y)\draw {255,100,100,100}
+
+    -- eyes
+    COLOR\push 255,255,255
+    g.rectangle "fill", -- left white
+      @x + 12, @y + 40,
+      10, 10
+
+    g.rectangle "fill", -- left white
+      @x + 40, @y + 40,
+      15, 10
+
+    COLOR\pop!
+
+    -- left pupil
+    @sprite\draw "64,15,5,4",
+      @x + 14 + math.sin(t), @y + 44 + math.cos(1 + t * 1.2)
+
+    -- right pupil
+    @sprite\draw "75,14,6,6",
+      @x + 44 + math.cos(2 + t * 0.9), @y + 44 + math.sin(3 + t * 1.1)
+    -- stop eyes
+
+
+    -- head and mouth
+    @sprite\draw "108,22,88,120", @x, @y
+    @sprite\draw "57,29,33,30",
+      @x + 10, @y + 84 + math.abs(math.sin(timer.getTime! * 5) * 10)
+
+
+    -- @mouth_hitbox\draw { 255,255,255,100 }
+    -- @puke_anim\draw @x - 21, @y + 77
+
+    g.pop!
+
 
   update: (dt) =>
     @puke_anim\update dt
@@ -292,7 +329,7 @@ class FoodItem extends Particle
     @hit = true
     @dr = (random_normal! - 0.5) * 2
 
-    mouth = Vec2d stage.head.mouth\center!
+    mouth = Vec2d stage.head.mouth_hitbox\center!
     @vel = (mouth - Vec2d(@x, @y))\normalized! * 200
     @accel = Vec2d(0, 100)
 
