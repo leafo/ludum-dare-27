@@ -1,4 +1,5 @@
 require "lovekit.all"
+require "lovekit.reloader"
 
 {graphics: g} = love
 
@@ -14,9 +15,9 @@ class Game
   new: =>
     @stage_i = 1
     @stages = {
-      FeedStage
       BuyStage
-      UpgradeState
+      -- FeedStage
+      -- UpgradeState
     }
 
     @inventory = {

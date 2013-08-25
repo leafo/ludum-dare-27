@@ -126,8 +126,13 @@ class Player extends Entity
 
 
 class Person extends Entity
-  w: 5
-  h: 5
+  lazy sprite: -> Spriter "images/characters.png", 16, 32
+
+  w: 4
+  h: 6
+
+  ox: 2, oy: 13
+
   speed: 10
   color: { 222, 84, 208 }
 
@@ -137,6 +142,14 @@ class Person extends Entity
     @vel = Vec2d!
     @accel = Vec2d!
     @behave!
+
+    with @sprite
+      @anim = StateAnim "stand", {
+        stand: \seq { "90,81,8,19", "101,81,8,19" }, 0.4
+        walk_left: \seq { "112,81,8,19", "132,81,8,19" }, 0.3
+        walk_right: \seq { "112,81,8,19", "132,81,8,19" }, 0.3, true
+        stunned: \seq { "140,81,10,19" }
+      }
 
   take_hit: (thing, stage) =>
     return if @stunned
@@ -148,24 +161,30 @@ class Person extends Entity
       @applied = nil
       shake @, 0.2, 10, 10
       wait 0.5
-
       @stunned = false
+
       @behave!
 
   behave: =>
-    -- @seq = (pick_one @behavior_1, @behavior_2) @
     @seq = @behavior_1!
 
   behavior_1: =>
-    print "behavior 1"
     Sequence ->
+      if math.random! < 0.5
+        -- stand for a moment
+        @vel[1] = 0
+        @vel[2] = 0
+        wait rand 0.8, 1.2
+
       @applied = Vec2d.random! * rand(90, 110)
       apply_force @, rand(0.1, 0.2), @applied
       @applied = nil
-      wait wait 0.8, 1.2
+      wait rand 0.8, 1.2
+
       again!
 
   update: (dt, stage) =>
+    @anim\update dt
     @seq\update dt if @seq
 
     @vel\adjust unpack @accel * dt
@@ -186,6 +205,18 @@ class Person extends Entity
 
       dampen_vector @vel, damp
 
+    if @stunned
+      @anim\set_state "stunned"
+    else
+      if @vel\is_zero!
+        @anim\set_state "stand"
+
+      if @vel[1] < 0
+        @anim\set_state "walk_left"
+
+      if @vel[1] > 0
+        @anim\set_state "walk_right"
+
     cx, cy = @fit_move @vel[1] * dt, @vel[2] * dt, stage
 
     if cx
@@ -204,6 +235,7 @@ class Person extends Entity
       g.translate @shake_x, @shake_y
 
     super @stunned and {255,0,0} or @color
+    @anim\draw @x - @ox, @y - @oy
 
     if @shake_x
       g.pop!
@@ -213,8 +245,8 @@ class Person extends Entity
 export ^
 
 class Vendor extends Box
-  w: 20
-  h: 20
+  w: 18
+  h: 11
   cooloff: 0.05
 
   price: 8
@@ -242,16 +274,13 @@ class Vendor extends Box
     stage.game.inventory.money -= @price
 
   draw: =>
-    if @active
-      Box.draw @, {188,200,123}
-    else
-      Box.draw @, {128,200,83}
-
-    @active = false
+    Box.draw @, {0,0,0, 200}
 
 class BuyStage extends Stage
   name: "Buy Stage"
-  person_drop: Box  11, 18, 176, 120
+
+  person_drop: Box 29, 49, 141, 71
+  bounding_box: Box 19, 39, 162, 92
 
   on_key: (char) =>
     if char == " "
@@ -259,11 +288,10 @@ class BuyStage extends Stage
         if @player\touches_box vendor.buy_radius
           vendor\buy @
 
-  add_people: (num=30) =>
+  add_people: (num=10) =>
     return for i=1,num
       with p = Person @person_drop\random_point!
         while @collides p
-          print "reputting..."
           p.x, p.y = @person_drop\random_point!
 
         @entities\add p
@@ -273,22 +301,31 @@ class BuyStage extends Stage
       if v\touches_box thing
         return true
 
-    not @game.viewport\contains_box thing
+    not @bounding_box\contains_box thing
+
+  draw: =>
+    @map\draw @viewport
+    super!
 
   new: (...) =>
     super ...
     @player = Player 100, 100
+
+    -- box<(31, 36), (18, 12)> -- steak
+
     @vendors = {
-      Vendor 10, 50, "steak"
-      Vendor 80, 50, "pasta"
-      Vendor 150, 30, "soda"
+      Vendor 31, 37, "steak"
+      Vendor 151, 37, "pasta"
+      Vendor 31, 97, "soda"
     }
 
+    @map = TileMap.from_tiled "maps.buy"
     @people = @add_people!
 
     with @entities
       \add @player
-      \add Vendor 10, 50
       \add_all @vendors
-      -- \add BoxSelector @game.viewport
+      \add BoxSelector @game.viewport
 
+
+{ :Player, :Person, :Vendor, :BuyStage }
