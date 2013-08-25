@@ -16,6 +16,11 @@ class Stage
 
     @particles = DrawList!
     @entities = DrawList!
+    @done = false
+    @shroud = 255
+
+    @entities\add Sequence ->
+      tween @, 0.2, shroud: 0
 
   make_hud: => Hud @
 
@@ -24,18 +29,26 @@ class Stage
     @particles\update dt
     @hud\update dt, @
 
+    if @timer.time == 0 and not @locked
+      @locked = true
+      @entities\add Sequence ->
+        wait 1.0
+        tween @, 1.0, shroud: 255
+        @done = true
+
   draw: =>
     @entities\draw!
     @particles\draw!
 
-  is_done: =>
-    @timer.time == 0
+  draw_top: =>
+    if @shroud > 0
+      @game.viewport\draw { 20,20,20, @shroud }
 
   collides: =>
     false
 
 class Timer
-  time: 10
+  time: 2
 
   draw: (x,y) =>
     old_font = g.getFont!

@@ -18,7 +18,7 @@ class Game
   new: =>
     @stage_i = 1
     @stages = {
-      -- BuyStage
+      BuyStage
       FeedStage
       UpgradeStage
     }
@@ -47,7 +47,7 @@ class Game
 
     @sequence = Sequence ->
       @current_stage = @stages[@stage_i] @, @current_stage
-      wait_until -> @current_stage\is_done!
+      wait_until -> @current_stage.done
       @stage_i = (@stage_i % #@stages) + 1
       again!
 
@@ -81,6 +81,7 @@ class Game
 
     if @current_stage
       @current_stage\draw!
+      @current_stage\draw_top!
 
     @viewport\pop!
 
