@@ -91,8 +91,8 @@ class UpgradeStage extends Stage
   name: "Upgrade Stage"
   money_earned: 0
 
-  new: (...) =>
-    super ...
+  new: (game, feed) =>
+    super game
 
     u = (name) ->
       key = name\sub 1, 1
@@ -111,8 +111,10 @@ class UpgradeStage extends Stage
       u "organization"
     }
 
-    satisfation = 1.0
-
+    satisfation = if feed
+      feed.head.health
+    else
+      1.0
 
     @health = HorizBar 110, 6, satisfation
     @health.tween_speed = 0.15

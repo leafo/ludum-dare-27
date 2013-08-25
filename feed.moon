@@ -187,7 +187,6 @@ class Head
 
       delta = math.abs 0.5 - random_normal!
       to_hide = math.floor delta / 0.09
-      to_hide = 3
 
       while to_hide > 0
         not_hungry = pick_one unpack [k for k,v in pairs @hungry_for when v]

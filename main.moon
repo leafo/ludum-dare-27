@@ -1,7 +1,7 @@
 require "lovekit.all"
 require "lovekit.reloader"
 
-{graphics: g} = love
+{graphics: g, :keyboard} = love
 
 export p = (str, ...) ->
   g.print str\lower!, ...
@@ -46,7 +46,7 @@ class Game
     }
 
     @sequence = Sequence ->
-      @current_stage = @stages[@stage_i] @
+      @current_stage = @stages[@stage_i] @, @current_stage
       wait_until -> @current_stage\is_done!
       @stage_i = (@stage_i % #@stages) + 1
       again!
@@ -55,6 +55,8 @@ class Game
 
   update: (dt) =>
     return if @paused
+    dt = dt * 10 if keyboard.isDown "return"
+
     @sequence\update dt
 
     if @current_stage
