@@ -137,6 +137,8 @@ class Head extends Box
     @health = 1 if @health > 1
 
 class Bat extends Box
+  lazy sprite: -> Spriter "images/tiles.png", 10, 10
+
   color: { 200, 188, 66 }
 
   x: -8
@@ -188,14 +190,16 @@ class Bat extends Box
     true
 
   draw: =>
-    COLOR\push @color
     g.push!
     g.translate @wx, @wy
     g.rotate @rot
-    g.rectangle "fill", @x, @y, @w, @h
-    COLOR\pop!
-    -- p "%.3f"\format(@rot), 0, 0
-    -- p "%.3f"\format(@return_progress or 0), 0, 8
+
+    -- COLOR\push @color
+    -- g.rectangle "fill", @x, @y, @w, @h
+    -- COLOR\pop!
+
+    @sprite\draw "10,151,70,8", @x, @y
+
     g.pop!
 
 
