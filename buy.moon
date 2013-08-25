@@ -44,18 +44,33 @@ Sequence.default_scope.apply_force = (thing, time, force, target="vel") ->
     coroutine.yield "more", -time
 
 class Player extends Entity
+  lazy sprite: -> Spriter "images/characters.png", 16, 32
+
   speed: 280
   max_speed: 80
-  w: 10
-  h: 10
+
+  w: 4
+  h: 6
+
+  ox: 3
+  oy: 15
 
   new: (x,y) =>
     super x, y
     @vel = Vec2d(0,0)
     @accel = Vec2d(0,0)
 
+    with @sprite
+      @anim = StateAnim "stand", {
+        stand: \seq { "89,33,10,21", "102,33,10,21" }, 0.4
+        walk_left: \seq { "116,33,10,21", "128,33,10,21" }, 0.3
+        walk_right: \seq { "116,33,10,21", "128,33,10,21" }, 0.3, true
+        stunned: \seq { "139,34,12,20" }
+      }
+
   update: (dt, stage) =>
     decel = @speed / 1.5 * dt
+    @anim\update dt * (@vel\len! / 100 + 1)
 
     if @hit_seq
       @hit_seq\update dt
@@ -83,6 +98,18 @@ class Player extends Entity
 
     @vel\adjust unpack @accel * dt * @speed
     @vel\cap @max_speed
+
+    state = if @hit_seq
+      "stunned"
+    else
+      if @vel\is_zero!
+        "stand"
+      elseif @vel[1] > 0
+        "walk_right"
+      else
+        "walk_left"
+
+    @anim\set_state state
 
     cx, cy = @fit_move @vel[1] * dt, @vel[2] * dt, stage
 
@@ -114,12 +141,18 @@ class Player extends Entity
       shake @, 0.2, 10, 10
       @hit_seq = nil
 
+  draw_shadow: =>
+    COLOR\push 0,0,0, 20
+    g.rectangle "fill", @x - 3, @y + 4, 10, 3
+    COLOR\pop!
+
   draw: =>
     if @shake_x
       g.push!
       g.translate @shake_x, @shake_y
 
-    super!
+    -- super {255,0,255}
+    @anim\draw @x - @ox, @y - @oy
 
     if @shake_x
       g.pop!
@@ -143,12 +176,30 @@ class Person extends Entity
     @accel = Vec2d!
     @behave!
 
+    (pick_one @make_male, @make_female) @
+
+  make_male: =>
+    @ox = 2
+    @oy = 13
+
     with @sprite
       @anim = StateAnim "stand", {
         stand: \seq { "90,81,8,19", "101,81,8,19" }, 0.4
         walk_left: \seq { "112,81,8,19", "132,81,8,19" }, 0.3
         walk_right: \seq { "112,81,8,19", "132,81,8,19" }, 0.3, true
         stunned: \seq { "140,81,10,19" }
+      }
+
+  make_female: =>
+    @ox = 2
+    @oy = 15
+
+    with @sprite
+      @anim = StateAnim "stand", {
+        stand: \seq { "90,102,8,21", "101,102,8,21" }, 0.4
+        walk_left: \seq { "112,102,8,21", "132,102,8,21" }, 0.3
+        walk_right: \seq { "112,102,8,21", "132,102,8,21" }, 0.3, true
+        stunned: \seq { "140,102,10,21" }
       }
 
   take_hit: (thing, stage) =>
@@ -184,7 +235,8 @@ class Person extends Entity
       again!
 
   update: (dt, stage) =>
-    @anim\update dt
+    @anim\update dt * (@vel\len! / 20 + 1)
+
     @seq\update dt if @seq
 
     @vel\adjust unpack @accel * dt
@@ -205,17 +257,17 @@ class Person extends Entity
 
       dampen_vector @vel, damp
 
-    if @stunned
-      @anim\set_state "stunned"
+    state = if @stunned
+       "stunned"
     else
       if @vel\is_zero!
-        @anim\set_state "stand"
+        "stand"
+      elseif @vel[1] > 0
+        "walk_right"
+      else
+        "walk_left"
 
-      if @vel[1] < 0
-        @anim\set_state "walk_left"
-
-      if @vel[1] > 0
-        @anim\set_state "walk_right"
+    @anim\set_state state
 
     cx, cy = @fit_move @vel[1] * dt, @vel[2] * dt, stage
 
@@ -264,7 +316,7 @@ class Vendor extends Box
 
   new: (@x, @y, @type) =>
     @buy_radius = @scale 1.8, 1.8, true
-    @anim = @sprite\seq { "89,60,10,10", "100,60,10,10" }, random_normal!
+    @anim = @sprite\seq { "24,114,10,10", "35,114,10,10" }, random_normal!
     @anim\update math.random!
 
   update: (dt, stage) =>
