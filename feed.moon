@@ -9,31 +9,62 @@ colors = {
 
 class FeedHud extends Hud
   -- box<(113, 2), (83, 12)>
+  lazy {
+    sprite: -> Spriter "images/tiles.png", 10, 10
+    head_sprite: -> Spriter "images/head.png"
+  }
+
+  on_sprites: {
+    steak: "40,130,10,10"
+    pasta: "50,130,10,10"
+    soda: "60,130,10,10"
+  }
+
+  off_sprites: {
+    steak: "40,140,10,10"
+    pasta: "50,140,10,10"
+    soda: "60,140,10,10"
+  }
 
   new: (...) =>
     super ...
-    @health = HorizBar 80, 6
+    @health = HorizBar 70, 6
 
   draw: =>
     super!
     hungry_for = @stage.head.hungry_for
 
-    p "Satisfaction", 110, 1
-    @health\draw 110, 10
+    @health = HorizBar 70, 6
 
-    p "Feed: ", 110, 20
-    w = 5
+    g.push!
+
+    g.translate 120, 1
+    p "Satisfaction", 0,0
+    @health\draw 3, 9
+    g.pop!
+
+
+    g.push!
+    g.translate 82, 25
+
+    @head_sprite\draw "44,68,49,38", 0,0
+
+    w = 10
     for i, food in ipairs {"steak", "pasta", "soda"}
-      if hungry_for[food]
-        COLOR\push colors[food]
+      hungry = hungry_for[food]
+      cell = if hungry
+        @on_sprites[food]
       else
-        COLOR\push colors.gray
+        @off_sprites[food]
 
-      g.rectangle "fill",
-        145 + (i - 1) * (w + 4), 21,
-        w, w
+      x, y = 4 + (i - 1) * (w + 4), 4
 
-      COLOR\pop!
+      @sprite\draw cell, x, y
+
+      unless hungry
+        @sprite\draw "70,130,10,10", x, y
+
+    g.pop!
 
   update: (dt) =>
     @health.value = @stage.head.health
@@ -467,7 +498,9 @@ class FeedStage extends Stage
         e\draw_back!
 
     super!
+    @hud\draw!
     @particles\draw!
+
 
   update: (dt) =>
     super dt
