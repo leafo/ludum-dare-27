@@ -288,13 +288,11 @@ class BuyStage extends Stage
         if @player\touches_box vendor.buy_radius
           vendor\buy @
 
-  add_people: (num=10) =>
+  make_people: (num=10) =>
     return for i=1,num
       with p = Person @person_drop\random_point!
         while @collides p
           p.x, p.y = @person_drop\random_point!
-
-        @entities\add p
 
   collides: (thing) =>
     for v in *@vendors
@@ -319,13 +317,20 @@ class BuyStage extends Stage
       Vendor 31, 97, "soda"
     }
 
+    @people = @make_people!
+
+    @units = DrawList!
+    @units.draw = @units.draw_sorted
+
+    with @units
+      \add @player
+      \add_all @people
+
     @map = TileMap.from_tiled "maps.buy"
-    @people = @add_people!
 
     with @entities
-      \add @player
       \add_all @vendors
-      \add BoxSelector @game.viewport
-
+      \add @units
+      -- \add BoxSelector @game.viewport
 
 { :Player, :Person, :Vendor, :BuyStage }
