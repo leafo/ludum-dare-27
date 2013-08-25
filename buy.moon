@@ -43,6 +43,7 @@ Sequence.default_scope.apply_force = (thing, time, force, target="vel") ->
   if time < 0
     coroutine.yield "more", -time
 
+
 class Player extends Entity
   lazy sprite: -> Spriter "images/characters.png", 16, 32
 
@@ -338,6 +339,8 @@ class Vendor extends Box
     print "BUYING #{@type} for #{@price}"
     stage.game.inventory[@type] += 1
     stage.game.inventory.money -= @price
+
+    stage.entities\add MoneyEmitter @price, stage, @x, @y
 
   draw: =>
     @tiles\draw "34,77,12,5", @x + 3, @y

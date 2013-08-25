@@ -14,6 +14,8 @@ class Stage
     @hud = @make_hud!
     @timer = Timer!
 
+    @particles = DrawList!
+
     with @entities = DrawList!
       \add @hud
 
@@ -21,9 +23,11 @@ class Stage
 
   update: (dt) =>
     @entities\update dt, @
+    @particles\update dt
 
   draw: =>
     @entities\draw!
+    @particles\draw!
 
   is_done: =>
     @timer.time == 0

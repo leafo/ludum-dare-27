@@ -6,6 +6,7 @@ require "lovekit.reloader"
 export p = (str, ...) ->
   g.print str\lower!, ...
 
+require "particles"
 require "misc"
 require "buy"
 require "feed"
