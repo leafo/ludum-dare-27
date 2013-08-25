@@ -35,7 +35,7 @@ class Stage
     false
 
 class Timer
-  time: 99
+  time: 10
 
   draw: (x,y) =>
     old_font = g.getFont!

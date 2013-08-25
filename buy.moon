@@ -1,11 +1,18 @@
 
 {graphics: g, :keyboard, :timer} = love
 
-mini_sprites = {
+on_sprites = {
   steak: "40,130,10,10"
   pasta: "50,130,10,10"
   soda: "60,130,10,10"
 }
+
+off_sprites = {
+  steak: "40,140,10,10"
+  pasta: "50,140,10,10"
+  soda: "60,140,10,10"
+}
+
 
 Sequence.default_scope.shake = (thing, total_time, mx=5, my=5, speed=10, decay_to=0) ->
   time = total_time
@@ -320,16 +327,38 @@ class Vendor extends Box
   cooloff: 0.05
 
   price: 8
+  quantity: 1
 
   new: (@x, @y, @type) =>
     @buy_radius = @scale 1.8, 1.8, true
     @anim = @sprite\seq { "24,114,10,10", "35,114,10,10" }, random_normal!
     @anim\update math.random!
 
+    -- quantity controller
+    @seq = Sequence ->
+      order = shuffle { 1,2,3 }
+      r = math.random!
+
+      to_skip = {}
+      to_skip[order[1]] = true
+      to_skip[order[2]] = r > 0.8
+      to_skip[order[3]] = r > 0.95
+
+      for i=1,3
+        @quantity = if to_skip[i]
+          0
+        else
+          1
+
+        wait 3.33
+
+      again!
+
   update: (dt, stage) =>
     @anim\update dt
     @cooloff -= dt
     @cooloff = 0 if @cooloff < 0
+    @seq\update dt
     true
 
   buy: (stage) =>
@@ -353,7 +382,12 @@ class Vendor extends Box
     @anim\draw @x + 4, @y - 3
     @tiles\draw "10,64,20,26", @x - 1, @y - 13
 
-    @tiles\draw mini_sprites[@type], @x + 4, @y - 16 + math.sin(timer.getTime() * 4)
+    sprite = if @quantity > 0
+      on_sprites[@type]
+    else
+      off_sprites[@type]
+
+    @tiles\draw sprite, @x + 4, @y - 16 + math.sin(timer.getTime() * 4)
 
     -- Box.draw @, {0,0,0, 200}
 
@@ -407,13 +441,17 @@ class BuyStage extends Stage
       COLOR\push 0,0,0, 180
       g.rectangle "fill", 15, 60, @game.viewport.w - 30,10
       COLOR\pop!
-      p "'Space' to Buy #{vendor.type} for $#{vendor.price}", 22, 61
+
+      if vendor.quantity > 0
+        p "'Space' to Buy #{vendor.type} for $#{vendor.price}", 22, 61
+      else
+        p "Out of #{vendor.type}, check later!", 22, 61
 
     @hud\draw!
 
   new: (...) =>
     super ...
-    @player = Player 100, 100
+    @player = Player 160, 110
 
     @vendors = {
       Vendor 31, 37, "steak"
@@ -435,7 +473,7 @@ class BuyStage extends Stage
 
     with @entities
       \add @units
-      -- \add BoxSelector @game.viewport
+      \add BoxSelector @game.viewport
 
     sfx\play_music "stage1"
 
