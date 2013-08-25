@@ -119,6 +119,11 @@ class Player extends Box
 export ^
 
 class Head extends Box
+  lazy {
+    sprite: -> Spriter "images/head.png"
+    puke_sprite: -> Spriter "images/puke.png", 60, 49
+  }
+
   -- box<(104, 76), (69, 39)>
   color: { 252, 231, 178 }
   mouth_color: { 255, 80, 80, 100 }
@@ -143,6 +148,8 @@ class Head extends Box
       soda: true
     }
 
+    @puke_anim = @puke_sprite\seq { 0,1,2, 3, 4, 5, 4, 5, }, 0.1
+
     @seq = Sequence ->
       for k in pairs @hungry_for
         @hungry_for[k] = true
@@ -162,7 +169,11 @@ class Head extends Box
     super @color
     @mouth\draw @puking and @puke_color or @mouth_color
 
+    @puke_anim\draw 10,10
+
   update: (dt) =>
+    @puke_anim\update dt
+
     @health -= dt / 10
     @health = 0 if @health < 0
 
