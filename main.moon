@@ -18,9 +18,9 @@ class Game
   new: =>
     @stage_i = 1
     @stages = {
-      BuyStage
+      -- BuyStage
       -- FeedStage
-      -- UpgradeState
+      UpgradeStage
     }
 
     @inventory = {
@@ -90,7 +90,7 @@ load_font = (img, chars)->
 love.load = ->
   export fonts = {
     number_font: load_font "images/number_font.png", [[0123456789:]]
-    default: load_font "images/font_thick.png", [[ abcdefghijklmnopqrstuvwxyz-1234567890!.,:;'"?$&/]]
+    default: load_font "images/font_thick.png", [[ abcdefghijklmnopqrstuvwxyz-1234567890!.,:;'"?$&/+]]
     tall: load_font "images/tall_font.png", [[abcdefghijklmnopqrstuvwxyz.() ]]
   }
 

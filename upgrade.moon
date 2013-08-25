@@ -18,7 +18,7 @@ class UpgradeSlot
   draw: (x,y) =>
     g.push!
     g.translate x, y
-    p "|#{@key}|: #{@name}", 0,0
+    p "#{@key}: #{@name}", 0,0
 
     g.translate 0, 8
     for i=1, @max_level
@@ -29,8 +29,9 @@ class UpgradeSlot
 
     g.pop!
 
-class UpgradeState extends Stage
+class UpgradeStage extends Stage
   name: "Upgrade Stage"
+  money_earned: 0
 
   new: (...) =>
     super ...
@@ -52,6 +53,31 @@ class UpgradeState extends Stage
       u "organization"
     }
 
+    satisfation = 1.0
+
+
+    @health = HorizBar 110, 6, satisfation
+    @health.tween_speed = 0.15
+    @health.value = 0
+
+    @emitter = Sequence ->
+      if @health.display_value > 0
+        x = @health.display_value * @health.w + 40
+        y = 20
+
+        earned = 11
+
+        @game.inventory.money += earned
+        @money_earned += earned
+
+        @particles\add MoneyEmitter\make_particle x, y
+        wait 0.1
+        again!
+
+    with @entities
+      \add @emitter
+      \add BoxSelector @game.viewport
+
     sfx\play_music "stage3"
 
   on_key: (key) =>
@@ -66,7 +92,18 @@ class UpgradeState extends Stage
   draw: =>
     super!
 
-    p "Choose An Upgrade (Press Key)", 20, 25
+    g.push!
+    g.translate 8, 20
+    p "Satis.", 0, 0
+    @health\draw 38, 0
+
+    COLOR\push 207, 246, 208
+    p "+$#{@money_earned}", @health.w + 36 + 4, 0
+    COLOR\pop!
+
+    g.pop!
+
+    -- p "Choose An Upgrade (Press Key)", 20, 25
 
     g.push!
     g.translate 8, 40
@@ -83,4 +120,11 @@ class UpgradeState extends Stage
       u\draw 0, (i - 1) * 15
 
     g.pop!
+    @hud\draw!
 
+  update: (dt, ...) =>
+    super dt, ...
+    @health\update dt
+
+
+{ :UpgradeStage, :UpgradeSlot }

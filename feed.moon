@@ -36,7 +36,6 @@ class FeedHud extends Hud
     hungry_for = @stage.head.hungry_for
 
     g.push!
-
     g.translate 120, 1
     p "Satisfaction", 0,0
     @health\draw 3, 9

@@ -96,12 +96,13 @@ class HorizBar
   color: { 255, 128, 128, 128 }
   border: true
   padding: 1
+  tween_speed: 1
 
   new: (@w, @h, @value=0.5)=>
     @display_value = @value
 
   update: (dt) =>
-    @display_value = ez_approach @display_value, @value, dt / 5
+    @display_value = ez_approach @display_value, @value, @tween_speed * dt / 5
     true
 
   draw: (x, y) =>
