@@ -63,6 +63,14 @@ class Player extends Entity
   speed: 280
   max_speed: 80
 
+  speed_levels: {
+    [0]: 100
+    [1]: 150
+    [2]: 200
+    [3]: 250
+    [4]: 300
+  }
+
   step_time: 0
   step_rate: 0.25
 
@@ -86,6 +94,8 @@ class Player extends Entity
       }
 
   update: (dt, stage) =>
+    @speed = @speed_levels[stage.game.upgrades.sneakers]
+
     decel = @speed / 1.5 * dt
     @anim\update dt * (@vel\len! / 100 + 1)
 
@@ -162,16 +172,27 @@ class Player extends Entity
 
     true
 
+  stun_cut: { -- guts upgrade
+    [0]: 1
+    [1]: 0.6
+    [2]: 0.5
+    [3]: 0.4
+    [4]: 0.1
+  }
+
   take_hit: (thing, stage) =>
     @hit_seq = Sequence ->
       -- print "player stunned"
       sfx\play "hit"
 
+      cut = @stun_cut[stage.game.upgrades.guts]
+
       @accel = Vec2d!
       dir = (Vec2d(@center!) - Vec2d(thing\center!))\normalized! * 3000
-      apply_force @, 0.1, dir
+      apply_force @, 0.1 * cut, dir
       @vel = Vec2d!
-      shake @, 0.2, 10, 10
+      shake @, 0.2 * cut, 10, 10
+
       @hit_seq = nil
 
   draw_shadow: =>
@@ -267,6 +288,10 @@ class Person extends Entity
 
       again!
 
+  hair_levels: {
+    25,50,100,200
+  }
+
   update: (dt, stage) =>
     @anim\update dt * (@vel\len! / 20 + 1)
 
@@ -275,12 +300,16 @@ class Person extends Entity
     @vel\adjust unpack @accel * dt
 
     -- repel powerup
-    -- repel = Vec2d(@center!) - Vec2d(stage.player\center!)
-    -- dist = repel\len!
-    -- dist = 30 - dist
+    hair = stage.game.upgrades.hair
+    if hair > 0
+      repel = Vec2d(@center!) - Vec2d(stage.player\center!)
+      dist = repel\len!
+      dist = 30 - dist
 
-    -- if dist > 0
-    --   @vel\adjust unpack repel\normalized! * dt * 100
+      amt = @hair_levels[hair]
+
+      if dist > 0
+        @vel\adjust unpack repel\normalized! * dt * amt
 
     if not @applied
       speed = @vel\len!
@@ -340,18 +369,34 @@ class Vendor extends Box
     sprite: -> Spriter "images/characters.png", 10, 10
   }
 
+  prices: {
+    steak: 8
+    pasta: 5
+    soda: 2
+  }
+
+  double_chances: {
+    [0]: 0.01
+    [1]: 0.04
+    [2]: 0.07
+    [3]: 0.10
+    [4]: 0.20
+  }
+
   w: 18
   h: 11
 
   cooloff: 0.05
 
-  price: 8
+  price: 10
+
   quantity: 1
 
   new: (@x, @y, @type) =>
     @buy_radius = @scale 1.8, 1.8, true
     @anim = @sprite\seq { "24,114,10,10", "35,114,10,10" }, random_normal!
     @anim\update math.random!
+    @price = assert @prices[@type], "invalid type"
 
     -- quantity controller
     @seq = Sequence ->
@@ -392,11 +437,15 @@ class Vendor extends Box
       -- print "NO MONEY"
       return
 
-    -- print "BUYING #{@type} for #{@price}"
-    stage.game.inventory[@type] += 1
+    amt = 1
+    max = @double_chances[stage.game.upgrades.bartering]
+    if math.random! <= max
+      amt += 1
+
+    stage.game.inventory[@type] += amt
     stage.game.inventory.money -= @price
 
-    stage.entities\add MoneyEmitter @price, stage, @x, @y
+    stage.entities\add MoneyEmitter amt, @price, stage, @x, @y
     true
 
   draw: =>
@@ -438,7 +487,7 @@ class BuyStage extends Stage
       else
         sfx\play "error"
 
-  make_people: (num=10) =>
+  make_people: (num=15) =>
     return for i=1,num
       with p = Person @person_drop\random_point!
         while @collides p
@@ -486,11 +535,15 @@ class BuyStage extends Stage
 
   new: (...) =>
     super ...
-    if BuyStage.show_tutorial
-      @tutorial = BuyTutorial @
+    if @game.inventory.money < 2 -- min price
+      @tutorial = GameOver @
       @locked = true
     else
-      sfx\play_music "stage1", false
+      if BuyStage.show_tutorial
+        @tutorial = BuyTutorial @
+        @locked = true
+      else
+        sfx\play_music "stage1", false
 
     @player = Player 160, 110
 
@@ -514,7 +567,7 @@ class BuyStage extends Stage
 
     with @entities
       \add @units
-      \add BoxSelector @game.viewport
+      -- \add BoxSelector @game.viewport
 
   remove_tutorial: =>
     @tutorial = nil

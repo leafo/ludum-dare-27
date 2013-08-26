@@ -27,24 +27,30 @@ class Game
     }
 
     @inventory = {
-      money: 490
+      money: 60
 
-      steak: 2
-      pasta: 2
-      soda: 2
+      steak: 0
+      pasta: 0
+      soda: 0
+    }
+
+    @stats = {
+      earned: 0
+      rounds: 0
+      fed: 0
     }
 
     @upgrades = {
       -- buy
-      sneakers: 0
-      bartering: 0
-      guts: 0
-      hair: 0
+      sneakers: 0 --
+      bartering: 0 --
+      guts: 0 --
+      hair: 0 --
 
       -- feed
-      rollerskates: 0
-      laxatives: 0
-      fiber: 0
+      rollerskates: 0 --
+      laxatives: 0 --
+      fiber: 0 --
       organization: 0
     }
 
@@ -67,7 +73,12 @@ class Game
 
   on_key: (key, ...) =>
     if key == "escape"
-      dispatch\pop!
+      if @current_stage and not @current_stage.tutorial
+        @current_stage.locked = true
+        @current_stage.tutorial = GameOver @current_stage
+      else
+        dispatch\pop!
+
       return true
 
     if key == "p"

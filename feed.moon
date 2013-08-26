@@ -69,12 +69,19 @@ class FeedHud extends Hud
     @health\update(dt)
     super dt
 
-
 class Player extends Box
   lazy sprite: -> Spriter "images/characters.png", 16, 32
 
   speed: 100
   throw_time: -1000
+
+  speeds: {
+    [0]: 50
+    [1]: 100
+    [2]: 200
+    [3]: 300
+    [4]: 500
+  }
 
   w: 8
   h: 10
@@ -83,6 +90,8 @@ class Player extends Box
   y: 124
 
   goto_pile: (pile, stage) =>
+    @speed = @speeds[stage.game.upgrades.rollerskates]
+
     if pile == @current_pile
       pile\throw stage if not @seq
       @on_throw pile
@@ -251,7 +260,7 @@ class Head
     g.pop!
 
 
-  update: (dt) =>
+  update: (dt, stage) =>
     speed_mul = 1
     speed_mul = 4 if @puking
 
@@ -259,24 +268,36 @@ class Head
 
     @puke_anim\update dt
 
-    unless @locked
-      @health -= dt / 10
+    unless stage.locked
+      round = stage.game.stats.rounds - stage.game.upgrades.fiber
+      mult = round / 2 + 1
+
+      @health -= dt / 20 * mult
       @health = 0 if @health < 0
 
     @seq\update dt
     @puking\update dt if @puking
     true
 
-  puke: =>
+  puke_times: {
+    [0]: 2.0
+    [1]: 1.5
+    [2]: 1.0
+    [3]: 0.5
+    [4]: 0.1
+  }
+
+  puke: (stage) =>
     sfx\play "puke"
     @puke_anim\reset!
     @puking = Sequence ->
-      print "I AM PUKING"
-      wait 1.0
+      puke_time = @puke_times[stage.game.upgrades.laxatives]
+      -- print "I AM PUKING for", puke_time
+      wait puke_time
       @puking = nil
 
   eat: (food, stage) =>
-    @health += 0.1
+    @health += food.heals
     @health = 1 if @health > 1
 
 class Bat extends Box
@@ -393,23 +414,28 @@ class FoodItem extends Particle
 
     @consumed = true
     if head.hungry_for[@type]
+      stage.game.stats.fed += 1
       head\eat @, stage
     else
-      head\puke!
+      head\puke stage
 
 class SteakItem extends FoodItem
+  heals: 0.2
+
   ox: 10, oy: 10
   cell: "9,100,21,19"
 
   type: "steak"
 
 class PastaItem extends FoodItem
+  heals: 0.1
   ox: 11, oy: 11
   cell: "49,100,22,22"
 
   type: "pasta"
 
 class SodaItem extends FoodItem
+  heals: 0.075
   ox: 9, oy: 9
   cell: "91,102,18,18"
   type: "soda"
@@ -419,6 +445,15 @@ class FoodPile extends Box
   key: "X"
 
   color: {100, 100, 100}
+  last_throw: 0
+
+  throw_rates: {
+    [0]: 0.5
+    [1]: 0.4
+    [2]: 0.3
+    [3]: 0.2
+    [4]: 0.0
+  }
 
   w: 20
   h: 20
@@ -431,6 +466,13 @@ class FoodPile extends Box
 
   throw: (stage) =>
     cls = @item_cls
+    rate = @throw_rates[stage.game.upgrades.organization]
+    t = timer.getTime!
+
+    if t - @last_throw < rate
+      return
+
+    @last_throw = t
 
     if @inventory[@item] > 0
       sfx\play "throw"
@@ -450,7 +492,12 @@ class FoodPile extends Box
 
   draw: =>
     @sprite\draw "50,180,26,20", @x - 3, @y
-    @sprite\draw on_sprites[@item], @x + 5, @y + 5
+    sprite = if @inventory[@item] > 0
+      on_sprites[@item]
+    else
+      off_sprites[@item]
+
+    @sprite\draw sprite, @x + 5, @y + 5
     -- Box.outline @, @color
 
   new: (state) =>
@@ -528,7 +575,7 @@ class FeedStage extends Stage
       \add @head
       \add_all @food_piles
 
-      \add BoxSelector @game.viewport
+      -- \add BoxSelector @game.viewport
       -- \add VectorSelector @game.viewport
 
       \add @player

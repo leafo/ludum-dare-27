@@ -48,7 +48,7 @@ class BuyTutorial
     ""
     "My boyfriend... He's starving!"
     ""
-    "Take this $100 and buy him"
+    "Take this $60 and buy him"
     "some food! Quickly!"
     ""
     "Arrow keys move,"
@@ -95,4 +95,27 @@ class FeedTutorial extends BuyTutorial
     "Press enter to begin"
   }
 
-{ :TitleScreen, :TutorialScreen }
+
+class GameOver extends BuyTutorial
+  new: (...) =>
+    super ...
+
+    stats = @parent.game.stats
+    @strs = {
+      "That's all you got?"
+      "Maybe you can do better"
+      "next time."
+      ""
+      "Score:"
+      " Earned $#{stats.earned}"
+      " Fed #{stats.fed} times"
+      " Lasted #{stats.rounds} rounds"
+
+      ""
+      "Press ESC to return to menu."
+      "Thanks for playing!"
+    }
+
+  on_key: (key) =>
+
+{ :TitleScreen, :TutorialScreen, :GameOver }

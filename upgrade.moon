@@ -105,8 +105,10 @@ class UpgradeStage extends Stage
     @health.tween_speed = 0.15
     @health.value = 0
 
+    @game.stats.rounds += 1
+
     @emitter = Sequence ->
-      if @health.display_value > 0
+      while @health.display_value > 0
         x = @health.display_value * @health.w + 40
         y = 20
 
@@ -118,11 +120,12 @@ class UpgradeStage extends Stage
         @particles\add MoneyEmitter\make_particle x, y
         sfx\play "get_money"
         wait 0.1
-        again!
+
+      @game.stats.earned += @money_earned
 
     with @entities
       \add @emitter
-      \add BoxSelector @game.viewport
+      -- \add BoxSelector @game.viewport
 
     sfx\play_music "stage3", false
 
