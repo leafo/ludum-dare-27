@@ -484,10 +484,15 @@ class SodaPile extends FoodPile
   x: 70, y: 115
 
 class FeedStage extends Stage
+  @show_tutorial: true
+
   name: "Feed Stage"
   lazy bg: -> imgfy "images/feed_bg.png"
 
-  on_key: (key) =>
+  on_key: (key, ...) =>
+    if @tutorial
+      return @tutorial\on_key key, ...
+
     pile_num = tonumber key
 
     if pile = @food_piles[pile_num]
@@ -498,6 +503,13 @@ class FeedStage extends Stage
 
   new: (...) =>
     super ...
+
+    if @@show_tutorial
+      @tutorial = FeedTutorial @
+      @locked = true
+    else
+      sfx\play_music "stage2", false
+
     @head = Head!
     @particles = DrawList!
     @player = Player!
@@ -519,8 +531,6 @@ class FeedStage extends Stage
       \add @player
       \add @bat
 
-    sfx\play_music "stage2", false
-
   make_hud: =>
     FeedHud @
 
@@ -534,9 +544,9 @@ class FeedStage extends Stage
     super!
     @hud\draw!
     @particles\draw!
+    @tutorial\draw! if @tutorial
 
-
-  update: (dt) =>
+  update: (dt, ...) =>
     super dt
     -- see if particles hit anything
     for p in *@particles
@@ -551,7 +561,12 @@ class FeedStage extends Stage
           p\send_to_mouth @
 
     @particles\update dt, @
+    @tutorial\update dt if @tutorial
 
-
+  remove_tutorial: =>
+    @tutorial = nil
+    sfx\play_music "stage1", false
+    @locked = false
+    BuyStage.show_tutorial = false
 
 { :Head, :Bat, :FeedHud, :Player, :FoodItem, :FoodPile, :FeedStage }

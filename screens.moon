@@ -78,4 +78,21 @@ class BuyTutorial
     @parent.game.viewport\draw {0,0,0, 180}
     @entities\draw!
 
+class FeedTutorial extends BuyTutorial
+  strs: {
+    "Great,"
+    "I hope you got some food."
+    ""
+    "He's very large, you need to"
+    "use a baseball bat to knock"
+    "the food into his mouth!"
+    ""
+    "Throw food with keys 1,2,3"
+    ""
+    "Swing the bat in time with"
+    "space. Watch for his appetite."
+    ""
+    "Press enter to begin"
+  }
+
 { :TitleScreen, :TutorialScreen }
