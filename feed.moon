@@ -98,7 +98,6 @@ class Player extends Box
       @on_throw pile
 
   on_throw: =>
-    sfx\play "throw"
     @throw_time = timer.getTime!
     @anim\set_state "throw"
 
@@ -260,8 +259,9 @@ class Head
 
     @puke_anim\update dt
 
-    @health -= dt / 10
-    @health = 0 if @health < 0
+    unless @locked
+      @health -= dt / 10
+      @health = 0 if @health < 0
 
     @seq\update dt
     @puking\update dt if @puking
@@ -433,11 +433,13 @@ class FoodPile extends Box
     cls = @item_cls
 
     if @inventory[@item] > 0
+      sfx\play "throw"
       x,y = @center!
       stage.particles\add cls x,y, @throw_dir * @throw_speed, @throw_gravity
       @inventory[@item] -= 1
     else
-      print "ERROR NO #{@item} left"
+      sfx\play "error"
+      -- print "ERROR NO #{@item} left"
 
   update: (dt) =>
     true
@@ -493,6 +495,7 @@ class FeedStage extends Stage
     if @tutorial
       return @tutorial\on_key key, ...
 
+    return if @locked
     pile_num = tonumber key
 
     if pile = @food_piles[pile_num]
@@ -565,8 +568,8 @@ class FeedStage extends Stage
 
   remove_tutorial: =>
     @tutorial = nil
-    sfx\play_music "stage1", false
+    sfx\play_music "stage2", false
     @locked = false
-    BuyStage.show_tutorial = false
+    FeedStage.show_tutorial = false
 
 { :Head, :Bat, :FeedHud, :Player, :FoodItem, :FoodPile, :FeedStage }

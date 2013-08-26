@@ -30,6 +30,8 @@ class Stage
     @particles\update dt
     @hud\update dt, @
 
+    @timer\update dt unless @locked
+
     if @timer.time == 0 and not @locked
       @locked = true
       @entities\add Sequence ->
@@ -102,7 +104,6 @@ class Hud
     for key in pairs @inventory
       @[key] = ez_approach @[key], @inventory[key], dt
 
-    @stage.timer\update dt
     true
 
 
