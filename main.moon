@@ -1,5 +1,4 @@
 require "lovekit.all"
-require "lovekit.reloader"
 
 {graphics: g, :keyboard} = love
 
