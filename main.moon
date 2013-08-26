@@ -11,6 +11,9 @@ require "misc"
 require "buy"
 require "feed"
 require "upgrade"
+require "screens"
+
+export ^
 
 class Game
   paused: false
@@ -55,7 +58,7 @@ class Game
 
   update: (dt) =>
     return if @paused
-    dt = dt * 10 if keyboard.isDown "return"
+    -- dt = dt * 10 if keyboard.isDown "return"
 
     @sequence\update dt
 
@@ -63,15 +66,19 @@ class Game
       @current_stage\update dt
 
   on_key: (key, ...) =>
+    if key == "escape"
+      dispatch\pop!
+      return true
+
     if key == "p"
       @paused = not @paused
 
-    if num = key\match "f(%d)"
-      num = tonumber num
-      if new = @stages[num]
-        @current_stage = num
-        @current_stage = new @
-        return
+    -- if num = key\match "f(%d)"
+    --   num = tonumber num
+    --   if new = @stages[num]
+    --     @current_stage = num
+    --     @current_stage = new @
+    --     return
 
     if @current_stage and @current_stage.on_key
       @current_stage\on_key key, ...
@@ -115,7 +122,8 @@ love.load = ->
   }
 
   g.setFont fonts.default
-  export dispatch = Dispatcher Game!
+  -- export dispatch = Dispatcher Game!
+  export dispatch = Dispatcher TitleScreen!
 
   -- dispatch.update = (dt) =>
   --   Dispatcher.update @, dt * 4

@@ -9,6 +9,7 @@ ez_approach = (val, target, dt) ->
 
 export ^
 
+
 class Stage
   new: (@game) =>
     @hud = @make_hud!
@@ -139,4 +140,24 @@ class HorizBar
       COLOR\pop!
 
     g.pop!
+
+class RevealString extends Sequence
+  new: (@str, @x, @y, rate=0.05) =>
+    @chr = 0
+
+    super ->
+      while @chr < #@str
+        @chr += 1
+        wait rate
+
+      @done = true
+
+      while true
+        wait 100
+
+  draw: =>
+    p @str\sub(1, @chr), @x, @y
+
+
+{ :Stage, :RevealString, :HorizBar, :Timer, :Hud }
 

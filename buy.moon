@@ -92,7 +92,10 @@ class Player extends Entity
     if @hit_seq
       @hit_seq\update dt
     else
-      @accel = movement_vector!
+      if stage.locked
+        @accel = Vec2d!
+      else
+        @accel = movement_vector!
 
     if @accel\is_zero!
       dampen_vector @vel, decel
@@ -416,12 +419,19 @@ class Vendor extends Box
     COLOR\pop!
 
 class BuyStage extends Stage
+  @show_tutorial: true
+
   name: "Buy Stage"
 
   person_drop: Box 29, 49, 141, 71
   bounding_box: Box 19, 39, 162, 92
 
-  on_key: (char) =>
+  on_key: (char, ...) =>
+    if @tutorial
+      return @tutorial\on_key char, ...
+
+    return if @locked
+
     if char == " " and @vendor_in_range
       if @vendor_in_range\buy @
         sfx\play "purchase"
@@ -441,14 +451,16 @@ class BuyStage extends Stage
 
     not @bounding_box\contains_box thing
 
-  update: (...) =>
-    super ...
+  update: (dt, ...) =>
+    super dt, ...
     @vendor_in_range = nil
 
     for vendor in *@vendors
       if @player\touches_box vendor.buy_radius
         @vendor_in_range = vendor
         break
+
+    @tutorial\update dt if @tutorial
 
   draw: =>
     @map\draw @viewport
@@ -470,9 +482,16 @@ class BuyStage extends Stage
         p "Out of #{vendor.type}, check later!", 22, 61
 
     @hud\draw!
+    @tutorial\draw! if @tutorial
 
   new: (...) =>
     super ...
+    if BuyStage.show_tutorial
+      @tutorial = BuyTutorial @
+      @locked = true
+    else
+      sfx\play_music "stage1", false
+
     @player = Player 160, 110
 
     @vendors = {
@@ -497,7 +516,10 @@ class BuyStage extends Stage
       \add @units
       \add BoxSelector @game.viewport
 
+  remove_tutorial: =>
+    @tutorial = nil
     sfx\play_music "stage1", false
-
+    @locked = false
+    BuyStage.show_tutorial = false
 
 { :Player, :Person, :Vendor, :BuyStage }

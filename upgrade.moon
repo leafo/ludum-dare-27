@@ -36,21 +36,6 @@ upgrades = {
   }
 }
 
-class RevealString extends Sequence
-  new: (@str, @x, @y, rate=0.05) =>
-    @chr = 0
-
-    super ->
-      while @chr < #@str
-        @chr += 1
-        wait rate
-
-      while true
-        wait 100
-
-  draw: =>
-    p @str\sub(1, @chr), @x, @y
-
 class UpgradeSlot
   current_level: 0
   max_level: 4
