@@ -51,8 +51,10 @@ class BuyTutorial
     "Take this $60 and buy him"
     "some food! Quickly!"
     ""
-    "Arrow keys move,"
-    "space to buy from vendors."
+    "Use arrow keys to run to"
+    "vendor."
+    "Mash space fast as possible"
+    "to load up on food."
     ""
     "Press enter to begin"
   }
@@ -117,5 +119,33 @@ class GameOver extends BuyTutorial
     }
 
   on_key: (key) =>
+
+
+
+class TryAgain extends BuyTutorial
+  new: (...) =>
+    super ...
+
+    stats = @parent.game.stats
+    @strs = {
+      "You didn't manage to"
+      "get any food!"
+      ""
+      "Let's try that again."
+      ""
+      "Move to vendors with arrows"
+      "keys."
+      ""
+      "Press space fast as possible"
+      "next to them to buy food."
+      ""
+      "Press enter to continue"
+    }
+
+  on_key: (key) =>
+    if key == "return"
+      @parent.timer.time = Timer.time
+      @parent\remove_tutorial!
+    
 
 { :TitleScreen, :TutorialScreen, :GameOver }

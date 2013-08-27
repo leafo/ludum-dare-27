@@ -392,7 +392,7 @@ class Vendor extends Box
 
   quantity: 1
 
-  new: (@x, @y, @type) =>
+  new: (stage, @x, @y, @type) =>
     @buy_radius = @scale 1.8, 1.8, true
     @anim = @sprite\seq { "24,114,10,10", "35,114,10,10" }, random_normal!
     @anim\update math.random!
@@ -404,9 +404,12 @@ class Vendor extends Box
       r = math.random!
 
       to_skip = {}
-      to_skip[order[1]] = true
-      to_skip[order[2]] = r > 0.8
-      to_skip[order[3]] = r > 0.95
+
+      unless stage.game.stats.rounds == 0
+        to_skip[order[1]] = true
+        to_skip[order[2]] = r > 0.8
+        to_skip[order[3]] = r > 0.95
+
 
       for i=1,3
         @quantity = if to_skip[i]
@@ -475,6 +478,18 @@ class BuyStage extends Stage
   person_drop: Box 29, 49, 141, 71
   bounding_box: Box 19, 39, 162, 92
 
+  on_done: =>
+    return true if @game.stats.rounds > 0
+
+    count = 0
+    for food in *{"steak", "pasta", "soda"}
+      count += @game.inventory[food]
+
+    if count == 0
+      @tutorial = TryAgain @
+    else
+      true
+
   on_key: (char, ...) =>
     if @tutorial
       return @tutorial\on_key char, ...
@@ -525,7 +540,9 @@ class BuyStage extends Stage
       g.rectangle "fill", 15, 60, @game.viewport.w - 30,10
       COLOR\pop!
 
-      if vendor.quantity > 0
+      if @game.inventory.money < vendor.price
+        p "Not enough money! (need $#{vendor.price})", 22, 61
+      elseif vendor.quantity > 0
         p "'Space' to Buy #{vendor.type} for $#{vendor.price}", 22, 61
       else
         p "Out of #{vendor.type}, check later!", 22, 61
@@ -548,9 +565,9 @@ class BuyStage extends Stage
     @player = Player 160, 110
 
     @vendors = {
-      Vendor 31, 37, "steak"
-      Vendor 151, 37, "pasta"
-      Vendor 31, 97, "soda"
+      Vendor @, 31, 37, "steak"
+      Vendor @, 151, 37, "pasta"
+      Vendor @, 31, 97, "soda"
     }
 
     @people = @make_people!

@@ -35,9 +35,12 @@ class Stage
     if @timer.time == 0 and not @locked
       @locked = true
       @entities\add Sequence ->
-        wait 1.0
-        tween @, 1.0, shroud: 255
-        @done = true
+        if @on_done!
+          wait 1.0
+          tween @, 1.0, shroud: 255
+          @done = true
+
+  on_done: => true
 
   draw: =>
     @entities\draw!
