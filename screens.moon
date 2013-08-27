@@ -133,7 +133,7 @@ class TryAgain extends BuyTutorial
       ""
       "Let's try that again."
       ""
-      "Move to vendors with arrows"
+      "Move to vendors with arrow"
       "keys."
       ""
       "Press space fast as possible"
